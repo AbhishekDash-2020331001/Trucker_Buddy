@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Trucker Buddy</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_post">PostActivity</string>
+    <string name="title_activity_truck_screen">TruckScreenActivity</string>
+    <string name="title_activity_my_running_trips">MyRunningTripsActivity</string>
+    <string name="title_activity_feed">FeedActivity</string>
+    <string name="title_activity_trip_detail_screen">TripDetailScreenActivity</string>
+    <string name="title_activity_view_responses_screen">ViewResponsesScreenActivity</string>
+    <string name="title_activity_bidder_profile_screen">BidderProfileScreenActivity</string>
+    <string name="title_activity_forget_pass">ForgetPassActivity</string>
+</resources>
