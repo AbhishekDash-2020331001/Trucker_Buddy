@@ -267,7 +267,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                 )
                 Button(
                     onClick = {
-
+                              auth.signOut()
                     }, shape = CutCornerShape(10.dp)
                 ) {
                     Text(
