@@ -1,12 +1,11 @@
 package com.abhishek.truckerbuddy
 
-import android.content.Context
-import androidx.compose.runtime.ProvidableCompositionLocal
 import com.abhishek.truckerbuddy.composables.Truck
 
 interface LoginCallBack{
     fun doSignIn(email:String,password:String)
     fun goToRegScreen()
+    fun gotoForgetPass()
 }
 
 interface SignUpCallBack{
@@ -59,5 +58,5 @@ interface ViewResponsesScreenCallBack{
 }
 
 interface ForgetPassActivityCallBack{
-    fun sendLink()
+    fun sendLink(email: String)
 }

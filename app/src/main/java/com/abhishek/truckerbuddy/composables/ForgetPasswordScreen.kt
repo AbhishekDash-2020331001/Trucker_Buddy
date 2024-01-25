@@ -2,7 +2,9 @@ package com.abhishek.truckerbuddy.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CutCornerShape
@@ -54,7 +56,8 @@ fun ForgetPasswordScreen(forgetPassActivityCallBack: ForgetPassActivityCallBack)
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
         Card(
@@ -70,11 +73,19 @@ fun ForgetPasswordScreen(forgetPassActivityCallBack: ForgetPassActivityCallBack)
                 modifier = Modifier.wrapContentSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier=Modifier.height(8.dp))
+                Text(
+                    text = "Reset Password",
+                    color = Color.Black,
+                    //modifier = Modifier.padding(start=100.dp),
+                    fontSize = 22.sp
+                )
+
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
                     modifier = Modifier
-                        .padding(top = 5.dp)
+                        .padding(5.dp)
                         .focusRequester(focusEmail),
                     leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
                     label = { Text(text = "Email") },
@@ -91,11 +102,12 @@ fun ForgetPasswordScreen(forgetPassActivityCallBack: ForgetPassActivityCallBack)
                     keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()}),
                     visualTransformation = VisualTransformation.None
                 )
+                Spacer(modifier=Modifier.height(8.dp))
                 Button(onClick = {
-                    forgetPassActivityCallBack.sendLink()
+                    forgetPassActivityCallBack.sendLink(email = email)
                 }
                 ) {
-                    Text(text = "Send Password Change Link",
+                    Text(text = "Send Link",
                         style = TextStyle(
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
@@ -104,6 +116,7 @@ fun ForgetPasswordScreen(forgetPassActivityCallBack: ForgetPassActivityCallBack)
                         )
                     )
                 }
+                Spacer(modifier=Modifier.height(8.dp))
             }
         }
 

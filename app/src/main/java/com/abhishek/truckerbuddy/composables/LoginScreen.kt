@@ -151,7 +151,9 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                         }
                     )
                     Row(modifier=Modifier.fillMaxWidth(),Arrangement.End) {
-                        TextButton(onClick = { /*TODO*/ }) {
+                        TextButton(onClick = {
+                            loginCallBack.gotoForgetPass()
+                        }) {
                             Text(
                                 text = "Forgot Password?",
                                 textAlign = TextAlign.End,

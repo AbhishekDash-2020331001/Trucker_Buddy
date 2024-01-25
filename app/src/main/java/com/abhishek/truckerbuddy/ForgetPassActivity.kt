@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,17 +36,20 @@ class ForgetPassActivity : ComponentActivity(),ForgetPassActivityCallBack {
         }
     }
 
-    override fun sendLink() {
+    override fun sendLink(email:String) {
         val auth=Firebase.auth
-        val email= auth.currentUser?.email
-        if (email != null) {
-            auth.sendPasswordResetEmail(email)
+        auth.sendPasswordResetEmail(email)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        Toast.makeText(
+                            baseContext,
+                            "Password Reset Link Sent",
+                            Toast.LENGTH_LONG,
+                        ).show()
                         Log.d(TAG, "Email sent.")
                     }
                 }
-        }
+
         val intent= Intent(this@ForgetPassActivity,MainActivity::class.java)
         startActivity(intent)
         finish()

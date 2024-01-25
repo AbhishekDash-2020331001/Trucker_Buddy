@@ -93,6 +93,12 @@ class MainActivity : ComponentActivity(),LoginCallBack {
         val intent= Intent(this@MainActivity,SignUpActivity::class.java)
         startActivity(intent)
     }
+
+    override fun gotoForgetPass() {
+        val intent= Intent(this@MainActivity,ForgetPassActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
 }
 
 @Composable
