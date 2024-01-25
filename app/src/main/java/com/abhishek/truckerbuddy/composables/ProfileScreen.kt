@@ -99,6 +99,9 @@ data class UserProfile(
 @Composable
 fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack) {
     val auth=Firebase.auth
+    var url by remember{
+        mutableStateOf(userProfile.profilePictureUrl)
+    }
     val currentUser=auth.currentUser
     val density = LocalDensity.current.density
     val bottomPadding = with(LocalView.current) {
@@ -177,12 +180,23 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
             mutableStateOf<Uri?>(null)
         }
 
+        var isLoading by remember { mutableStateOf(false) }
+
         val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri ->
+                isLoading = true
                 selectedImageUri = uri
-                upload(selectedImageUri)
-
+                upload(selectedImageUri) { downloadUrl ->
+                    // Use the downloadUrl as needed
+                    if (downloadUrl.isNotEmpty()) {
+                        // Image upload and Firestore update successful
+                        url = downloadUrl
+                    } else {
+                        // Handle the case when downloadUrl is empty (upload or Firestore update failed)
+                    }
+                    isLoading = false
+                }
             }
         )
         LazyColumn(
@@ -193,7 +207,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                ProfilePicture(userProfile.profilePictureUrl)
+                ProfilePicture(url, isLoading)
                 Spacer(modifier = Modifier.height(16.dp))
                 ElevatedButton(onClick = { singlePhotoPickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -291,16 +305,16 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
 
 }
 
-fun upload(selectedImageUri: Uri?) {
-
-    val db: FirebaseFirestore=Firebase.firestore
-    val storage: FirebaseStorage= Firebase.storage
-    val auth: FirebaseAuth=Firebase.auth
+fun upload(selectedImageUri: Uri?, callback: (String) -> Unit) {
+    val db: FirebaseFirestore = Firebase.firestore
+    val storage: FirebaseStorage = Firebase.storage
+    val auth: FirebaseAuth = Firebase.auth
     val storageRef: StorageReference = storage.reference
     val currentUser = auth.currentUser
     val uid = currentUser?.uid
-    val fileName = uid+"_profile_image.jpg"
+    val fileName = uid + "_profile_image.jpg"
     val imageRef: StorageReference = storageRef.child(fileName)
+
     // Upload the image to Firebase Storage
     imageRef.putFile(selectedImageUri!!)
         .addOnSuccessListener { taskSnapshot ->
@@ -308,25 +322,31 @@ fun upload(selectedImageUri: Uri?) {
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 // The URI contains the download URL of the uploaded image
                 val downloadUrl = uri.toString()
-                val client= hashMapOf(
+                val client = hashMapOf(
                     "Photo" to downloadUrl
                 )
                 if (uid != null) {
                     db.collection("Clients").document(uid)
                         .set(client, SetOptions.merge())
-                        .addOnSuccessListener { Log.d(ContentValues.TAG, "DocumentSnapshot successfully written!") }
-                        .addOnFailureListener { e -> Log.w(ContentValues.TAG, "Error writing document", e) }
+                        .addOnSuccessListener {
+                            Log.d(ContentValues.TAG, "DocumentSnapshot successfully written!")
+                            callback(downloadUrl)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(ContentValues.TAG, "Error writing document", e)
+                            callback("") // Return empty string in case of failure
+                        }
+                } else {
+                    callback("") // Return empty string if UID is null
                 }
-
-
             }
         }
         .addOnFailureListener { exception ->
             // Handle the failure of the image upload
             Log.e(ContentValues.TAG, "Error uploading image to Firebase Storage: ${exception.message}")
+            callback("") // Return empty string in case of failure
         }
 }
-
 @Composable
 fun EmailCard(
     icon: ImageVector,
@@ -432,7 +452,7 @@ fun UserDetailCard(
 
 
 @Composable
-fun ProfilePicture(profilePictureUrl: String?) {
+fun ProfilePicture(profilePictureUrl: String?, isDataLoading: Boolean) {
     Box(
         modifier = Modifier
             .size(150.dp)
@@ -452,9 +472,18 @@ fun ProfilePicture(profilePictureUrl: String?) {
                 .fillMaxSize()
                 .clip(MaterialTheme.shapes.medium)
         )
+
+        // Circular loading indicator
+        if (isDataLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(150.dp)
+                    .align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
-
 
 
 

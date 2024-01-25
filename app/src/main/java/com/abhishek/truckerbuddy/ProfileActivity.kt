@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,8 +22,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.abhishek.truckerbuddy.composables.ProfileScreen
 import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
@@ -47,6 +51,7 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         super.onCreate(savedInstanceState)
 
         setContent {
+
             TruckerBuddyTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -91,10 +96,11 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                         val runningTripsList = documentSnapshot.get("Running Trips") as? List<String>
                                         runningTrips = runningTripsList?.size ?: 0
                                         rating = documentSnapshot.getDouble("Rating") ?: 0.0
-                                        profilePictureUrl = documentSnapshot.getString("Photo")
+                                        profilePictureUrl = documentSnapshot.getString("Photo")?:""
                                     } else {
                                         // Document does not exist, handle accordingly
                                     }
+
                                 }
                                 .addOnFailureListener { exception ->
                                     // Handle failures in retrieving data
@@ -104,21 +110,31 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                         }
                     }
 
-                    // Pass the retrieved profile picture URL to the ProfileScreen
-                    auth.currentUser?.let {
-                        ProfileScreen(
-                            profilePictureUrl = profilePictureUrl,
-                            name = name,
-                            username = username,
-                            email = email,
-                            phoneNumber = phone,
-                            completedTrips = completedTrips,
-                            runningTrips = runningTrips,
-                            userRating = rating,
-                            emailVerified = it.isEmailVerified,
-                            profileCallBack =profileCallBack
+                    if (name == "Loading") {
+                        // Display loading indicator or handle loading state
+                        // For example, you can show a loading spinner
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(50.dp)
                         )
+                    } else {
+                        // Data has been loaded, call ProfileScreen
+                        auth.currentUser?.let {
+                            ProfileScreen(
+                                profilePictureUrl = profilePictureUrl,
+                                name = name,
+                                username = username,
+                                email = email,
+                                phoneNumber = phone,
+                                completedTrips = completedTrips,
+                                runningTrips = runningTrips,
+                                userRating = rating,
+                                emailVerified = it.isEmailVerified,
+                                profileCallBack = profileCallBack
+                            )
+                        }
                     }
+
+                    // Pass the retrieved profile picture URL to the ProfileScreen
                 }
             }
         }
