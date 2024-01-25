@@ -48,6 +48,7 @@ interface ProfileCallBack{
     fun gotoFeed()
     fun myRunningTrips()
     fun sendVerificationMail()
+    fun signOut()
 }
 
 interface MyRunningTripsCallBack{

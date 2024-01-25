@@ -166,6 +166,13 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         }
     }
 
+    override fun signOut() {
+        auth.signOut()
+        val intent= Intent(this@ProfileActivity,MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun gotoPost() {
         val truck= Truck(
