@@ -9,9 +9,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,19 +32,12 @@ import androidx.compose.ui.unit.dp
 import com.abhishek.truckerbuddy.composables.ProfileScreen
 import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
-import com.google.android.play.core.integrity.e
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class ProfileActivity : ComponentActivity(),ProfileCallBack {
     private lateinit var auth: FirebaseAuth
@@ -50,8 +46,9 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent {
+// ... (imports and class definition)
 
+        setContent {
             TruckerBuddyTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -83,20 +80,22 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                 .addOnSuccessListener { documentSnapshot ->
                                     if (documentSnapshot.exists()) {
                                         // Document exists, extract and update data
-                                        name = documentSnapshot.getString("Name")?:""
-                                        username = documentSnapshot.getString("Username")?:""
-                                        email = documentSnapshot.getString("Email")?:""
-                                        phone = documentSnapshot.getString("Phone")?:""
+                                        name = documentSnapshot.getString("Name") ?: ""
+                                        username = documentSnapshot.getString("Username") ?: ""
+                                        email = documentSnapshot.getString("Email") ?: ""
+                                        phone = documentSnapshot.getString("Phone") ?: ""
 
                                         // Retrieve Completed Trips as a List<String>
-                                        val completedTripsList = documentSnapshot.get("Completed Trips") as? List<String>
+                                        val completedTripsList =
+                                            documentSnapshot.get("Completed Trips") as? List<String>
                                         completedTrips = completedTripsList?.size ?: 0
 
                                         // Retrieve Running Trips as a List<String>
-                                        val runningTripsList = documentSnapshot.get("Running Trips") as? List<String>
+                                        val runningTripsList =
+                                            documentSnapshot.get("Running Trips") as? List<String>
                                         runningTrips = runningTripsList?.size ?: 0
                                         rating = documentSnapshot.getDouble("Rating") ?: 0.0
-                                        profilePictureUrl = documentSnapshot.getString("Photo")?:""
+                                        profilePictureUrl = documentSnapshot.getString("Photo") ?: ""
                                     } else {
                                         // Document does not exist, handle accordingly
                                     }
@@ -110,34 +109,41 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                         }
                     }
 
-                    if (name == "Loading") {
-                        // Display loading indicator or handle loading state
-                        // For example, you can show a loading spinner
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(50.dp)
-                        )
-                    } else {
-                        // Data has been loaded, call ProfileScreen
-                        auth.currentUser?.let {
-                            ProfileScreen(
-                                profilePictureUrl = profilePictureUrl,
-                                name = name,
-                                username = username,
-                                email = email,
-                                phoneNumber = phone,
-                                completedTrips = completedTrips,
-                                runningTrips = runningTrips,
-                                userRating = rating,
-                                emailVerified = it.isEmailVerified,
-                                profileCallBack = profileCallBack
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (name == "Loading") {
+                            // Display loading indicator or handle loading state
+                            // For example, you can show a loading spinner
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .padding(8.dp)
                             )
+                        } else {
+                            // Data has been loaded, call ProfileScreen
+                            auth.currentUser?.let {
+                                ProfileScreen(
+                                    profilePictureUrl = profilePictureUrl,
+                                    name = name,
+                                    username = username,
+                                    email = email,
+                                    phoneNumber = phone,
+                                    completedTrips = completedTrips,
+                                    runningTrips = runningTrips,
+                                    userRating = rating,
+                                    emailVerified = it.isEmailVerified,
+                                    profileCallBack = profileCallBack
+                                )
+                            }
                         }
                     }
-
-                    // Pass the retrieved profile picture URL to the ProfileScreen
                 }
             }
         }
+
     }
     override fun gotoFeed() {
         val intent= Intent(this@ProfileActivity,FeedActivity::class.java)
