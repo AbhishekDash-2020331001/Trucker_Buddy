@@ -3,8 +3,6 @@ package com.abhishek.truckerbuddy.composables
 import android.os.Build
 import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
-import com.abhishek.truckerbuddy.R
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,10 +42,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,16 +59,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import coil.compose.rememberImagePainter
 import com.abhishek.truckerbuddy.PostCallBack
+import com.abhishek.truckerbuddy.R
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.vanpra.composematerialdialogs.MaterialDialog
@@ -87,7 +82,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PostScreen(postCallBack: PostCallBack,truck: Truck){
+fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate: LocalDate){
     val goods= listOf("Clothing","Electronics and Home Appliances","Furnitures and Household Items","Food and Beverages","Timber and Wood Products","Metal and Steel","Construction Materials","Automobiles ( Car, Truck, Animal )","Industrial Chemicals","Pharmaceuticals","Coal/Sand/Gravel","Petroleum Products","Cattle/Poultry/Other Livestock","Textiles","Garbage/Waste/Recyclable Materials","Construction Equipment","Products for Supermarkets and Retail Stores","Parcels and Packages for Delivery")
     var divisions by remember { mutableStateOf(emptyList<String>()) }
     var pickZillas by remember { mutableStateOf(emptyList<String>()) }
@@ -141,10 +136,10 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
     }
 
     var pickedDate by remember {
-        mutableStateOf(LocalDate.now())
+        mutableStateOf(pdate)
     }
     var pickedTime by remember {
-        mutableStateOf(LocalTime.now())
+        mutableStateOf(ptime)
     }
     val density = LocalDensity.current.density
     val bottomPadding = with(LocalView.current) {
@@ -274,7 +269,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
     ){innerPadding->
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+                .wrapContentSize()
                 .padding(16.dp)
                 .padding(bottom = (bottomPadding + 25).dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -282,8 +277,8 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
             item {
                 Card(
                     modifier=Modifier
-                        .padding(10.dp)
-                        .wrapContentSize()
+                        .padding(bottom=10.dp)
+                        .fillMaxWidth()
                         .clickable {
                                    dateDialogState.show()
                         },
@@ -294,12 +289,12 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .wrapContentSize()
                             .padding(16.dp)
                     ) {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .wrapContentSize()
                                 .padding(bottom = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -309,11 +304,12 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                         Text(text = formattedDate)
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                //Spacer(modifier = Modifier.height(24.dp))
                 Card(
                     modifier=Modifier
-                        .padding(10.dp)
+                        .padding(bottom=10.dp)
                         .wrapContentSize()
+                        .fillMaxWidth()
                         .clickable {
                                    timeDialogState.show()
                         },
@@ -324,12 +320,12 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .wrapContentSize()
                             .padding(16.dp)
                     ) {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .wrapContentSize()
                                 .padding(bottom = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -339,10 +335,10 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                         Text(text = formattedTime)
                     }
                 }
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .wrapContentSize()
                         .height(20.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -383,25 +379,30 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
 
                 TruckCard(
                     truck = truck,
-                    onclick = { postCallBack.gotoTruckScreen() },
+                    onclick = { postCallBack.gotoTruckScreen(ptime=pickedTime,pdate=pickedDate) },
                     default = R.drawable.truck
                 )
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
 
                 ExposedDropdownMenuBox(
                     expanded = expanded5,
                     onExpandedChange = {expanded5=it} ) {
-                    TextField(
+                    OutlinedTextField(
                         value = typeOfGood.ifEmpty { "Select Type of Good" },
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded5)
                         },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier.menuAnchor()
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded5,
@@ -420,11 +421,11 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     }
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .wrapContentSize()
                         .height(20.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -461,20 +462,25 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     )
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 ExposedDropdownMenuBox(
                     expanded = expanded1,
                     onExpandedChange = {expanded1=it} ) {
-                    TextField(
+                    OutlinedTextField(
                         value = pickUpDivision.ifEmpty { "Select Division" },
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded1)
                         },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier.menuAnchor()
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded1,
@@ -493,20 +499,25 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     }
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 ExposedDropdownMenuBox(
                     expanded = expanded2,
                     onExpandedChange = {expanded2=it} ) {
-                    TextField(
+                    OutlinedTextField(
                         value = pickUpZilla ?: "Select Zilla",
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded2)
                         },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier.menuAnchor()
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded2,
@@ -524,7 +535,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     }
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier
@@ -565,12 +576,12 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     )
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 ExposedDropdownMenuBox(
                     expanded = expanded3,
                     onExpandedChange = {expanded3=it} ) {
-                    TextField(
+                    OutlinedTextField(
                         value = deliveryDivision.ifEmpty { "Select Division" },
                         onValueChange = {
                                         deliveryZilla= null.toString()
@@ -579,8 +590,13 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded3)
                         },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier.menuAnchor()
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded3,
@@ -599,20 +615,25 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     }
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 ExposedDropdownMenuBox(
                     expanded = expanded4,
                     onExpandedChange = {expanded4=it} ) {
-                    TextField(
+                    OutlinedTextField(
                         value = deliveryZilla ?: "Select Zilla",
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded4)
                         },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier.menuAnchor()
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded4,
@@ -630,10 +651,11 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck){
                     }
                 }
 
-                Spacer(modifier=Modifier.height(32.dp))
+                Spacer(modifier=Modifier.height(16.dp))
 
                 Button(
                     onClick = {
+                              println("pickmoment $formattedDate and $formattedTime")
                               postCallBack.createPost(
                                   pickUpDate = formattedDate,
                                   pickUpTime = formattedTime,

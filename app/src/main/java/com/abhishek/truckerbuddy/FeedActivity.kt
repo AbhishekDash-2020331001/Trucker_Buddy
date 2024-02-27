@@ -1,9 +1,11 @@
 package com.abhishek.truckerbuddy
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,9 +16,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.abhishek.truckerbuddy.composables.FeedScreen
 import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
+import java.time.LocalDate
+import java.time.LocalTime
 
 class FeedActivity : ComponentActivity(),FeedCallBack {
     val feedCallBack=this
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -38,14 +43,19 @@ class FeedActivity : ComponentActivity(),FeedCallBack {
         startActivity(intent)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun gotoPostScreen() {
         val truck= Truck(
             name = "Select",
             imageRes = "https://firebasestorage.googleapis.com/v0/b/trucker-buddy-f7323.appspot.com/o/truck.jpg?alt=media&token=e1675e46-78f8-471b-8b3f-18218f5d6cee",
             highestCapacity = 0
         )
+        val ptime= LocalTime.now()
+        val pdate=LocalDate.now()
         val intent= Intent(this@FeedActivity,PostActivity::class.java)
         intent.putExtra("selectedTruck",truck)
+        intent.putExtra("ptime",ptime)
+        intent.putExtra("pdate",pdate)
         startActivity(intent)
         finish()
     }

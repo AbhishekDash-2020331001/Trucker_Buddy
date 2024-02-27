@@ -23,9 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.abhishek.truckerbuddy.BidderInfo
 import com.abhishek.truckerbuddy.R
 
-data class BidderInfo(val name:String, val email:String, val phone:String, val rating:Double, val completedTrips:Int,val photo:String)
+/*data class BidderInfo(val name:String, val email:String, val phone:String, val rating:Double, val completedTrips:Int,val photo:String)*/
 @Composable
 fun BidderProfileScreen(bidderInfo: BidderInfo){
     Column(

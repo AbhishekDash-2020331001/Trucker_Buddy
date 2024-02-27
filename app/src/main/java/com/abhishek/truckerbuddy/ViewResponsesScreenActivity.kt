@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.abhishek.truckerbuddy.composables.Bid
-import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.composables.ViewResponsesScreen
 import com.abhishek.truckerbuddy.composables.getDocuments
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme

@@ -12,11 +12,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.abhishek.truckerbuddy.composables.FeedScreen
 import com.abhishek.truckerbuddy.composables.LoginScreen
-import com.abhishek.truckerbuddy.composables.PostScreen
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser

@@ -1,5 +1,7 @@
 package com.abhishek.truckerbuddy.composables
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.abhishek.truckerbuddy.MyRunningTripsCallBack
+import com.abhishek.truckerbuddy.TripBrief
+import java.time.LocalDateTime
 
 /*data class Trip(
     val tripId: String,
@@ -25,6 +29,7 @@ import com.abhishek.truckerbuddy.MyRunningTripsCallBack
     val bestResponse: String
 )*/
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyRunningTrips(myRunningTripsCallBack: MyRunningTripsCallBack,trips:List<TripBrief>){
     LazyColumn(
@@ -50,7 +55,7 @@ fun MyRunningTrips(myRunningTripsCallBack: MyRunningTripsCallBack,trips:List<Tri
         }
         else{
             items(trips) {
-                TripCard(trip = it, str = "View Responses", onPlaceBidClick = {myRunningTripsCallBack.viewResponses(it.tripId)})
+                TripCard(trip = it, str = if(isPickUpDateTimeInFuture(pickUpDate = it.pickUpDate, pickUpTime = it.pickUpTime, currentDateTime = LocalDateTime.now())) "View Responses" else "Closed", onPlaceBidClick = {myRunningTripsCallBack.viewResponses(it.tripId)})
 
             }
         }

@@ -1,11 +1,13 @@
 package com.abhishek.truckerbuddy
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.abhishek.truckerbuddy.composables.MyRunningTrips
-import com.abhishek.truckerbuddy.composables.TripBrief
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -27,6 +28,7 @@ import com.google.firebase.ktx.Firebase
 class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
 
     val myRunningTripsCallBack=this
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

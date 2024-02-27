@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -26,6 +27,8 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Calendar
 import java.util.Locale
 
@@ -34,6 +37,8 @@ class PostActivity : ComponentActivity(),PostCallBack {
     private lateinit var receivedIntent: Intent
     private lateinit var auth: FirebaseAuth
     private lateinit var receivedTruck: Truck
+    private lateinit var ptime: LocalTime
+    private lateinit var pdate: LocalDate
     val postCallBack=this
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +46,8 @@ class PostActivity : ComponentActivity(),PostCallBack {
         auth = Firebase.auth
         receivedIntent = intent
         receivedTruck = (receivedIntent.getSerializableExtra("selectedTruck") as? Truck)!!
+        ptime = (receivedIntent.getSerializableExtra("ptime") as? LocalTime)!!
+        pdate = (receivedIntent.getSerializableExtra("pdate") as? LocalDate)!!
         setContent {
             TruckerBuddyTheme {
                 // A surface container using the 'background' color from the theme
@@ -50,7 +57,7 @@ class PostActivity : ComponentActivity(),PostCallBack {
                 ) {
 
                     Log.d(TAG,"Checking")
-                    PostScreen(postCallBack = postCallBack,truck=receivedTruck)
+                    PostScreen(postCallBack = postCallBack,truck=receivedTruck, ptime=ptime, pdate=pdate)
 
                 }
             }
@@ -63,10 +70,17 @@ class PostActivity : ComponentActivity(),PostCallBack {
         finish()
     }
 
-    override fun gotoTruckScreen() {
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun gotoTruckScreen(ptime: LocalTime, pdate: LocalDate) {
         val intent= Intent(this@PostActivity,TruckScreenActivity::class.java)
+        intent.putExtra("ptime",ptime)
+        intent.putExtra("pdate",pdate)
         startActivity(intent)
     }
+
+    /*override fun gotoTruckScreen() {
+
+    }*/
 
     override fun createPost(
         pickUpDate: String,
@@ -114,6 +128,13 @@ class PostActivity : ComponentActivity(),PostCallBack {
                                 ?.addOnSuccessListener {
                                     // Handle success
                                     println("Element added to the array field.")
+                                    Toast.makeText(
+                                        baseContext,
+                                        "Post Added Successfully",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                    val intent=Intent(this@PostActivity,MyRunningTripsActivity::class.java)
+
                                 }
                                 ?.addOnFailureListener { e ->
                                     // Handle failure

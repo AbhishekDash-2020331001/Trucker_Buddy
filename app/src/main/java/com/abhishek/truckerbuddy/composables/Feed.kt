@@ -1,11 +1,12 @@
 package com.abhishek.truckerbuddy.composables
 
+import android.os.Build
 import android.service.controls.ControlsProviderService.TAG
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -13,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Face
@@ -38,11 +39,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,21 +56,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
 import coil.compose.rememberImagePainter
 import com.abhishek.truckerbuddy.FeedCallBack
 import com.abhishek.truckerbuddy.R
+import com.abhishek.truckerbuddy.TripBrief
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
-data class TripBrief(
+/*data class TripBrief(
     val pickUpTime:String,
     val tripId:String,
     val pickUpDate: String,
@@ -75,10 +78,10 @@ data class TripBrief(
     val truckType: String,
     val truckCapacity: Int,
     val goodsType: String
-)
+)*/
 
 @Composable
-fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: () -> Unit = {},str:String="Place Your Bid") {
+fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: () -> Unit = {}, str:String="Place Your Bid") {
     var truckImage by remember {
         mutableStateOf("")
     }
@@ -195,7 +198,7 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
             )
 
             // Place your bid button with blinking animation
-            BlinkingButton(text = str, color = Color(0xFF008B8B), onClick = onPlaceBidClick)
+            BlinkingButton(text = str, color = if(str=="Closed")Color.Red else Color(0xFF008B8B), onClick = onPlaceBidClick)
         }
     }
 }
@@ -228,29 +231,36 @@ fun BlinkingButton(text: String, color: Color, onClick: () -> Unit) {
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(feedCallBack: FeedCallBack) {
-    var truckImg by remember{ mutableStateOf("") }
+    var truckImg by remember { mutableStateOf("") }
     var trips by remember { mutableStateOf<List<TripBrief>>(emptyList()) }
-    val db=Firebase.firestore
+    var searchQuery by remember { mutableStateOf("") }
+    val currentDateTime = LocalDateTime.now()
+    val db = Firebase.firestore
+    var cnt=0
     db.collection("Trips")
         .whereEqualTo("Running", true)
         .get()
         .addOnSuccessListener { documents ->
+            println("hahaha ${documents.size()}")
+            trips = emptyList()
             for (document in documents) {
+                // ... (existing code for retrieving trips remains unchanged)
                 Log.d(TAG, "${document.id} => ${document.data}")
-                val pickUpDivision=document.getString("Pick Up Division")?:""
-                val pickUpZilla=document.getString("Pick Up Zilla")?:""
-                val deliveryDivision=document.getString("Delivery Division")?:""
-                val deliveryZilla=document.getString("Delivery Zilla")?:""
+                val pickUpDivision = document.getString("Pick Up Division") ?: ""
+                val pickUpZilla = document.getString("Pick Up Zilla") ?: ""
+                val deliveryDivision = document.getString("Delivery Division") ?: ""
+                val deliveryZilla = document.getString("Delivery Zilla") ?: ""
                 val truckMap = document.get("Needed Truck") as? Map<String, Any>
-                var name:String?= null
-                var highestCapacity:Int?= null
+                var name: String? = null
+                var highestCapacity: Int? = null
                 if (truckMap != null) {
                     // Retrieve values associated with keys
                     name = truckMap["name"] as? String
-                    highestCapacity = truckMap["highestCapacity"] as? Int
+                    highestCapacity = (truckMap["highestCapacity"] as? Long)?.toInt()
 
                     if (name != null && highestCapacity != null) {
                         // Use the retrieved values
@@ -264,70 +274,119 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                     // Handle the case where "Truck" is not a map or is null
                     println("Truck field is not a map or is null.")
                 }
-                trips+=TripBrief(
-                    pickUpTime = document.getString("Pick Up Time")?:"",
-                    pickUpDate = document.getString("Pick Up Date")?:"",
+                trips += TripBrief(
+                    pickUpTime = document.getString("Pick Up Time") ?: "",
+                    pickUpDate = document.getString("Pick Up Date") ?: "",
                     pickUpLocation = "$pickUpDivision, $pickUpZilla",
                     deliveryLocation = "$deliveryDivision, $deliveryZilla",
-                    truckType = name?:"",
-                    goodsType = document.getString("Type of Good")?:"",
-                    truckCapacity = highestCapacity?:0,
+                    truckType = name ?: "",
+                    goodsType = document.getString("Type of Good") ?: "",
+                    truckCapacity = highestCapacity ?: 0,
                     tripId = document.id
                 )
+
             }
         }
         .addOnFailureListener { exception ->
             Log.w(TAG, "Error getting documents: ", exception)
         }
 
-    val density = LocalDensity.current.density
-    val bottomPadding = with(LocalView.current) {
-        if (isAttachedToWindow) {
-            val insets = ViewCompat.getRootWindowInsets(this)?.systemGestureInsets
-            insets?.bottom?.toFloat()?.div(density) ?: 0f
-        } else {
-            0f
+    // Use a derived state to filter trips based on the search query
+    val filteredTrips by remember(searchQuery, trips) {
+        derivedStateOf {
+            if (searchQuery.isBlank()) {
+                // If search query is blank, show all trips
+                trips.filter { trip ->
+                    // Check if the pick-up date and time are in the future
+                    isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime, currentDateTime)
+                }
+            } else {
+                // Filter trips based on the search query
+                trips.filter { trip ->
+                    (trip.pickUpLocation.contains(searchQuery, ignoreCase = true) ||
+                            trip.deliveryLocation.contains(searchQuery, ignoreCase = true)) &&
+                            isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime, currentDateTime)
+                }
+            }
         }
     }
-    val items = listOf(
-        BottomNavigationItem(
-            title = "Feed",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home
-        ),
-        BottomNavigationItem(
-            title = "Post",
-            selectedIcon = Icons.Filled.Add,
-            unselectedIcon = Icons.Outlined.Add
-        ),
-        BottomNavigationItem(
-            title = "Settings",
-            selectedIcon = Icons.Filled.Settings,
-            unselectedIcon = Icons.Outlined.Settings
-        ),
-        BottomNavigationItem(
-            title = "Profile",
-            selectedIcon = Icons.Filled.Face,
-            unselectedIcon = Icons.Outlined.Face
-        ),
-    )
 
-    var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(0)
-    }
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "Feed")
+                },
+                actions = {
+                    // Add a search TextField
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { newValue ->
+                            searchQuery = newValue
+                            // You can perform search or filtering based on the searchQuery
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Icon"
+                                //modifier = Modifier.padding(end = 2.dp)
+                            )
+                        },
+                        placeholder = {
+                            Text(text = "Search...")
+                        },
+                        modifier = Modifier
+                            //.padding(end = 16.dp)
+                            .fillMaxWidth()
+                            .wrapContentSize(Alignment.Center),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        )
+                    )
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
+                val items = listOf(
+                    BottomNavigationItem(
+                        title = "Feed",
+                        selectedIcon = Icons.Filled.Home,
+                        unselectedIcon = Icons.Outlined.Home
+                    ),
+                    BottomNavigationItem(
+                        title = "Post",
+                        selectedIcon = Icons.Filled.Add,
+                        unselectedIcon = Icons.Outlined.Add
+                    ),
+                    BottomNavigationItem(
+                        title = "Settings",
+                        selectedIcon = Icons.Filled.Settings,
+                        unselectedIcon = Icons.Outlined.Settings
+                    ),
+                    BottomNavigationItem(
+                        title = "Profile",
+                        selectedIcon = Icons.Filled.Face,
+                        unselectedIcon = Icons.Outlined.Face
+                    ),
+                )
+
+                var selectedItemIndex by rememberSaveable {
+                    mutableStateOf(0)
+                }
+
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedItemIndex == index,
                         onClick = {
                             selectedItemIndex = index
                             // navController.navigate(item.title)
-                            if(selectedItemIndex==1){
+                            if (selectedItemIndex == 1) {
                                 feedCallBack.gotoPostScreen()
-                            }
-                            else if(selectedItemIndex==3){
+                            } else if (selectedItemIndex == 3) {
                                 feedCallBack.gotoProfileScreen()
                             }
                         },
@@ -348,24 +407,25 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                     )
                 }
             }
-        }
-    ){ innerPadding ->
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 8.dp)
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .padding(bottom = (bottomPadding + 25).dp),
+                .padding(innerPadding)
+                .padding(bottom = 25.dp, start = 10.dp, end = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(trips) {
+            items(filteredTrips) { // Use filteredTrips instead of trips
                 TripCard(trip = it, onPlaceBidClick = { feedCallBack.placeYourBid(it.tripId) })
             }
         }
     }
-
-
-
 }
+
 
 @Composable
 fun BlinkingText(
@@ -395,4 +455,13 @@ fun BlinkingText(
         ),
         modifier = Modifier.padding(bottom = 8.dp)
     )
+}
+
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun isPickUpDateTimeInFuture(pickUpDate: String, pickUpTime: String, currentDateTime: LocalDateTime): Boolean {
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd yyyy hh:mm a", Locale.ENGLISH)
+    val pickUpDateTime = LocalDateTime.parse("$pickUpDate $pickUpTime", dateTimeFormatter)
+    return pickUpDateTime.isAfter(currentDateTime)
 }

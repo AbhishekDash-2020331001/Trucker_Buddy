@@ -38,6 +38,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.DelicateCoroutinesApi
+import java.time.LocalDate
+import java.time.LocalTime
 
 class ProfileActivity : ComponentActivity(),ProfileCallBack {
     private lateinit var auth: FirebaseAuth
@@ -195,6 +197,7 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         finish()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(DelicateCoroutinesApi::class)
     override fun gotoPost() {
         val truck= Truck(
@@ -202,8 +205,12 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
             imageRes = "https://firebasestorage.googleapis.com/v0/b/trucker-buddy-f7323.appspot.com/o/truck.jpg?alt=media&token=e1675e46-78f8-471b-8b3f-18218f5d6cee",
             highestCapacity = 0
         )
+        val ptime= LocalTime.now()
+        val pdate= LocalDate.now()
         val intent= Intent(this@ProfileActivity,PostActivity::class.java)
         intent.putExtra("selectedTruck",truck)
+        intent.putExtra("ptime",ptime)
+        intent.putExtra("pdate",pdate)
         startActivity(intent)
         finish()
     }

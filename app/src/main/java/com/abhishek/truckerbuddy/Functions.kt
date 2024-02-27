@@ -1,6 +1,8 @@
 package com.abhishek.truckerbuddy
 
 import com.abhishek.truckerbuddy.composables.Truck
+import java.time.LocalDate
+import java.time.LocalTime
 
 interface LoginCallBack{
     fun doSignIn(email:String,password:String)
@@ -15,7 +17,7 @@ interface SignUpCallBack{
 
 interface PostCallBack{
     fun gotoFeed()
-    fun gotoTruckScreen()
+    fun gotoTruckScreen(ptime:LocalTime,pdate:LocalDate)
     fun createPost(
         pickUpDate:String,
         pickUpTime:String,
