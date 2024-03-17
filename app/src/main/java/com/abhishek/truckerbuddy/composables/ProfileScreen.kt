@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +25,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Email
@@ -92,7 +95,9 @@ data class UserProfile(
     val completedTrips: Int,
     val runningTrips: Int,
     val userRating: Double,
-    val emailVerified: Boolean
+    val emailVerified: Boolean,
+    val deals: Int,
+    val coin: Int
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -187,16 +192,21 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
             onResult = { uri ->
                 isLoading = true
                 selectedImageUri = uri
-                upload(selectedImageUri) { downloadUrl ->
-                    // Use the downloadUrl as needed
-                    if (downloadUrl.isNotEmpty()) {
-                        // Image upload and Firestore update successful
-                        url = downloadUrl
-                    } else {
-                        // Handle the case when downloadUrl is empty (upload or Firestore update failed)
+                try {
+                    upload(selectedImageUri) { downloadUrl ->
+                        // Use the downloadUrl as needed
+                        if (downloadUrl.isNotEmpty()) {
+                            // Image upload and Firestore update successful
+                            url = downloadUrl
+                        } else {
+                            // Handle the case when downloadUrl is empty (upload or Firestore update failed)
+                        }
+                        isLoading = false
                     }
-                    isLoading = false
+                }catch (e:Exception){
+                    println("Hello")
                 }
+
             }
         )
         LazyColumn(
@@ -207,6 +217,42 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .clickable {
+                            profileCallBack.showToast(userProfile.coin)
+                        }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00FFFF)) // Background color for the circle
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Coins",
+                            tint = Color.Yellow, // Color of the star icon
+                            modifier = Modifier
+                                .size(24.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${userProfile.coin}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 24.sp, // Adjust the font size as needed
+                            fontWeight = FontWeight.Bold, // Apply a bold font weight
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        color = Color(0xFFFFD700) // Color for the text
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
                 ProfilePicture(url, isLoading)
                 Spacer(modifier = Modifier.height(16.dp))
                 ElevatedButton(onClick = { singlePhotoPickerLauncher.launch(
@@ -234,12 +280,12 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                     value = userProfile.name,
                     onClick={}
                 )
-                UserDetailCard(
+                /*UserDetailCard(
                     icon = Icons.Default.Person,
                     label = "Username",
                     value = userProfile.username,
                     onClick={}
-                )
+                )*/
 
                 EmailCard(
                     icon = Icons.Default.Email,
@@ -257,22 +303,29 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                     onClick={}
                 )
 
-                UserDetailCard(
+                /*UserDetailCard(
                     icon = Icons.Default.TripOrigin,
                     label = "Completed Trips",
                     value = userProfile.completedTrips.toString(),
                     onClick={}
-                )
+                )*/
 
                 UserDetailCard(
                     icon = Icons.Default.WorkOutline,
-                    label = "Running Trips",
+                    label = "My Trips",
                     value = userProfile.runningTrips.toString(),
                     onClick={
                         profileCallBack.myRunningTrips()
                     }
                 )
-
+                UserDetailCard(
+                    icon = Icons.AutoMirrored.Filled.Announcement,
+                    label = "Received Deal Request",
+                    value = userProfile.deals.toString(),
+                    onClick = {
+                        profileCallBack.gotoReceivedBid()
+                    }
+                )
                 UserDetailCard(
                     icon = Icons.Default.Star,
                     label = "User Rating",
@@ -282,7 +335,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                 Button(
                     onClick = {
                               profileCallBack.signOut()
-                    }, shape = CutCornerShape(10.dp)
+                    }, shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
                         text = "LOGOUT",
@@ -298,6 +351,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
+
 
     }
 
@@ -392,7 +446,7 @@ fun EmailCard(
                 ){
                     if (currentUser != null) {
                         BlinkingButton(
-                            text = emailVerified.toString(),
+                            text = if(emailVerified)"Verified" else "Verify Your Mail",
                             color = if(currentUser.isEmailVerified)Color(0xFF008B8B) else Color.Red,
                             onClick=onClick
                         )
@@ -498,6 +552,8 @@ fun ProfileScreen(
     runningTrips: Int,
     userRating: Double,
     emailVerified:Boolean,
+    deals:Int,
+    coin:Int,
     profileCallBack: ProfileCallBack) {
     val userProfile = UserProfile(
         profilePictureUrl = profilePictureUrl,
@@ -508,7 +564,9 @@ fun ProfileScreen(
         completedTrips = completedTrips,
         runningTrips = runningTrips,
         userRating = userRating,
-        emailVerified=emailVerified
+        emailVerified=emailVerified,
+        deals=deals,
+        coin = coin
     )
     UserProfileScreen(userProfile = userProfile,profileCallBack=profileCallBack)
 }

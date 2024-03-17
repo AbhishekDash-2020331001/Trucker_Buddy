@@ -2,6 +2,7 @@ package com.abhishek.truckerbuddy
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -28,19 +29,23 @@ import com.abhishek.truckerbuddy.composables.BidderProfileScreen
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-class BidderProfileScreenActivity : ComponentActivity() {
+class BidderProfileScreenActivity : ComponentActivity(),BidderProfileScreenActivityCallBack {
+    val bidderProfileScreenActivityCallBack=this
     lateinit var auth:FirebaseAuth
     lateinit var db:FirebaseFirestore
     private lateinit var receivedIntent: Intent
     private lateinit var bidderId: String
+    private lateinit var bidId: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         receivedIntent = intent
         bidderId = (receivedIntent.getSerializableExtra("bidderId") as? String)?:""
+        bidId = (receivedIntent.getSerializableExtra("bidId") as? String)?:""
         auth=Firebase.auth
         db=Firebase.firestore
         setContent {
@@ -50,6 +55,8 @@ class BidderProfileScreenActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    println("ashar pore bidderId $bidderId")
+                    var accepted by remember{ mutableStateOf(false) }
                     var name by remember { mutableStateOf("Loading") }
                     var email by remember { mutableStateOf("Loading") }
                     var phone by remember { mutableStateOf("Loading") }
@@ -86,7 +93,7 @@ class BidderProfileScreenActivity : ComponentActivity() {
 
                     }
 
-                    if (profilePictureUrl == "https://firebasestorage.googleapis.com/v0/b/trucker-buddy-f7323.appspot.com/o/pp.jpg?alt=media&token=c86d8dc3-0f3d-42cd-a920-202fb46a0aa9") {
+                    if (name == "Loading") {
                         // Display loading indicator or handle loading state
                         // For example, you can show a loading spinner
                         Box(
@@ -105,13 +112,99 @@ class BidderProfileScreenActivity : ComponentActivity() {
                         val data= profilePictureUrl?.let { BidderInfo(name = name, completedTrips = completedTrips, email = email, phone = phone, photo = it, rating = rating) }
                         if (data != null) {
                             BidderProfileScreen(
-                                bidderInfo = data
+                                bidderInfo = data,
+                                bidId= bidId,
+                                bidderId = bidderId,
+                                bidderProfileScreenActivityCallBack = bidderProfileScreenActivityCallBack
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    override fun sendDeal(bidId: String, bidderId: String, currentUserUid: String) {
+        db.collection("Bids")
+            .document(bidId)
+            .update(
+                mapOf(
+                    "Deal Due" to false,
+                    "Deal Sent" to true
+                )
+            )
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
+        db.collection("Clients")
+            .document(currentUserUid)
+            .update("Sent Deal Request", FieldValue.arrayUnion(bidId))
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
+
+        db.collection("Clients")
+            .document(bidderId)
+            .update("Received Deal Request", FieldValue.arrayUnion(bidId))
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
+        db
+            .collection("Clients")
+            .document(currentUserUid)
+            .update("Coin",FieldValue.increment(-5))
+            .addOnSuccessListener {
+                Toast.makeText(
+                    baseContext,
+                    "5 coins charged",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    override fun cancelDeal(bidId: String, bidderId: String, currentUserUid : String) {
+        db.collection("Bids")
+            .document(bidId)
+            .update(
+                mapOf(
+                    "Deal Due" to true,
+                    "Deal Sent" to false
+                )
+            )
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
+        db.collection("Clients")
+            .document(currentUserUid)
+            .update("Sent Deal Request",FieldValue.arrayRemove(bidId))
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
+
+        db.collection("Clients")
+            .document(bidderId)
+            .update("Received Deal Request",FieldValue.arrayRemove(bidId))
+            .addOnSuccessListener {
+                // Handle success
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
     }
 }
 

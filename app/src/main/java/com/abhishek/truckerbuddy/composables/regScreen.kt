@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -113,7 +114,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                                 .focusRequester(focusEmail),
                             leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
                             label = { Text(text = "Email") },
-                            shape = CutCornerShape(10.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black, // Set the text color to black
                                 cursorColor = Color.Black,
@@ -135,7 +136,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                                 .focusRequester(focusPassword),
                             leadingIcon = { Icon(imageVector = Icons.Default.Lock, null) },
                             label = { Text(text = "Password") },
-                            shape = CutCornerShape(10.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black, // Set the text color to black
                                 cursorColor = Color.Black,
@@ -170,31 +171,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                                 .focusRequester(focusName),
                             leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
                             label = { Text(text = "Full Name") },
-                            shape = CutCornerShape(10.dp),
-
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black, // Set the text color to black
-                                cursorColor = Color.Black,
-                                focusedBorderColor = Color.Black,
-                                unfocusedBorderColor = Color.Black
-                            ),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            keyboardActions = KeyboardActions(onNext = { focusUsername.requestFocus() }),
-                            visualTransformation = VisualTransformation.None
-                        )
-                    }
-
-                    item {
-                        OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            modifier = Modifier
-                                .padding(top = 5.dp)
-                                .focusRequester(focusUsername),
-                            leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
-                            label = { Text(text = "Unique Username") },
-                            shape = CutCornerShape(10.dp),
+                            shape = RoundedCornerShape(10.dp),
 
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black, // Set the text color to black
@@ -218,7 +195,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                                 .focusRequester(focusPhone),
                             leadingIcon = { Icon(imageVector = Icons.Default.Phone, null) },
                             label = { Text(text = "Phone") },
-                            shape = CutCornerShape(10.dp),
+                            shape = RoundedCornerShape(10.dp),
 
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 textColor = Color.Black, // Set the text color to black
@@ -240,8 +217,8 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
 
                     Button(
                         onClick = {
-                            signUpCallBack.register(email, password, name, username)
-                        }, shape = CutCornerShape(10.dp)
+                            signUpCallBack.register(email, password, name, phone)
+                        }, shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
                             text = "REGISTER",

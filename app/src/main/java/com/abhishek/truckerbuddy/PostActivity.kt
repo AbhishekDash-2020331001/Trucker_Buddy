@@ -92,6 +92,17 @@ class PostActivity : ComponentActivity(),PostCallBack {
         typeOfGood: String
     ) {
         val currentUser = auth.currentUser
+        if (currentUser != null) {
+            if(!currentUser.isEmailVerified){
+                Toast.makeText(
+                    baseContext,
+                    "Please verify your mail first!",
+                    Toast.LENGTH_SHORT,
+                ).show()
+                return
+            }
+
+        }
         val uid = currentUser?.uid
         val docId = uid?.let { generateDocumentId(it) }
         uid?.let { userId ->
@@ -104,6 +115,8 @@ class PostActivity : ComponentActivity(),PostCallBack {
                             // Use the retrieved name in the trip hashmap
 
                             val trip = hashMapOf(
+                                "Assigned" to "null",
+                                "Ongoing" to false,
                                 "Post Creator Name" to name,
                                 "Post Creator" to uid,
                                 "Trip" to docId,
@@ -134,7 +147,8 @@ class PostActivity : ComponentActivity(),PostCallBack {
                                         Toast.LENGTH_SHORT,
                                     ).show()
                                     val intent=Intent(this@PostActivity,MyRunningTripsActivity::class.java)
-
+                                    startActivity(intent)
+                                    finish()
                                 }
                                 ?.addOnFailureListener { e ->
                                     // Handle failure

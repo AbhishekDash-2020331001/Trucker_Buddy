@@ -99,7 +99,7 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                             .focusRequester(focusUsername),
                         leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
                         label = { Text(text = "Email") },
-                        shape = CutCornerShape(10.dp),
+                        shape = RoundedCornerShape(10.dp),
 
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             textColor = Color.Black, // Set the text color to black
@@ -120,7 +120,7 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                             .focusRequester(focusPassword),
                         leadingIcon = { Icon(imageVector = Icons.Default.Lock, null) },
                         label = { Text(text = "Password") },
-                        shape = CutCornerShape(10.dp),
+                        shape = RoundedCornerShape(10.dp),
 
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             textColor = Color.Black, // Set the text color to black
@@ -163,7 +163,7 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                     
                     Button(onClick = {
                                      loginCallBack.doSignIn(email,password)
-                    }, shape = CutCornerShape(10.dp)
+                    }, shape = RoundedCornerShape(10.dp)
                         ) {
                         Text(text = "LOGIN",
                             style = TextStyle(

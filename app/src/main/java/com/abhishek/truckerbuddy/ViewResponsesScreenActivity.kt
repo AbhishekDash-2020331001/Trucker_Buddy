@@ -50,7 +50,8 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
                             val bidderId = document.getString("Bidder Id") ?: ""
                             val creatorId = document.getString("Creator Id") ?: ""
                             val trippId = document.getString("Trip Id") ?: ""
-                            bids+= Bid(bidAmount, bidderId, creatorId, trippId)
+                            val bidId = document.getString("Bid Id")?:""
+                            bids+= Bid(bidAmount, bidderId, creatorId, trippId, bidId)
                         }
                     }
                     ViewResponsesScreen(bids = bids, viewResponsesScreenCallBack = viewResponsesScreenCallBack)
@@ -59,9 +60,11 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
         }
     }
 
-    override fun showBidderProfile(bidderId: String) {
+    override fun showBidderProfile(bidderId: String, bidId:String) {
+        println("the bidder id is $bidderId")
         val intent=Intent(this@ViewResponsesScreenActivity,BidderProfileScreenActivity::class.java)
         intent.putExtra("bidderId",bidderId)
+        intent.putExtra("bidId",bidId)
         startActivity(intent)
     }
 }

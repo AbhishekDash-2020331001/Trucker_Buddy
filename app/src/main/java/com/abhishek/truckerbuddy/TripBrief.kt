@@ -8,5 +8,7 @@ data class TripBrief(
     val deliveryLocation: String,
     val truckType: String,
     val truckCapacity: Int,
-    val goodsType: String
+    val goodsType: String,
+    val assigned: String,
+    val ongoing: Boolean
 )

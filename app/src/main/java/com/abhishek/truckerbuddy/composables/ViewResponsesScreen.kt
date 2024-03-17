@@ -28,7 +28,7 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.tasks.await
 
-data class Bid(val bidAmount: String, val bidderId: String, val creatorId: String, val tripId: String)
+data class Bid(val bidAmount: String, val bidderId: String, val creatorId: String, val tripId: String, val bidId: String)
 data class BidWithName(val bid:Bid,val name:String)
 
 suspend fun getName(id: String): String {
@@ -121,7 +121,8 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
 
                             Button(
                                 onClick = {
-                                    viewResponsesScreenCallBack.showBidderProfile(bid.bid.bidderId)
+                                    println("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+                                    viewResponsesScreenCallBack.showBidderProfile(bidderId=bid.bid.bidderId, bidId = bid.bid.bidId)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008B8B)),
                                 contentPadding = PaddingValues(8.dp),

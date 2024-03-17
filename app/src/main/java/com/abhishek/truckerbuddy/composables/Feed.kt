@@ -82,6 +82,7 @@ import java.util.Locale
 
 @Composable
 fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: () -> Unit = {}, str:String="Place Your Bid") {
+    if(str=="Closed") toggleRunning(tripId = trip.tripId,isTripDone = true)
     var truckImage by remember {
         mutableStateOf("")
     }
@@ -282,7 +283,9 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                     truckType = name ?: "",
                     goodsType = document.getString("Type of Good") ?: "",
                     truckCapacity = highestCapacity ?: 0,
-                    tripId = document.id
+                    tripId = document.id,
+                    assigned = document.getString("Assigned")?:"",
+                    ongoing = document.getBoolean("Ongoing")?:false
                 )
 
             }

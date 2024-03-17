@@ -42,196 +42,17 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 
-/*
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Boolean) {
-    var str by remember {
-        mutableStateOf("")
-    }
-    var truckImage by remember {
-        mutableStateOf("")
-    }
-    val db = Firebase.firestore
-    val truckType = trip.truckType
-    Log.d(TAG, "Ekhane $truckType")
-    if (truckType.isNotBlank()) {
-        Log.d(TAG, "Not Blank")
-        db.collection("Trucks")
-            .document(trip.truckType)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document != null) {
-                    truckImage = document.getString("Photo").toString()
-                } else {
 
-                }
-            }
-            .addOnFailureListener { e ->
-
-            }
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        item {
-            // Trip ID
-            Text(
-                text = "Trip ID",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = trip.tripId,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Trip Creator Name
-            Text(
-                text = "Trip Creator",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            BlinkingButton(text = creator, color = Color(0xFF008B8B), onClick = {})
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Status
-            Text(
-                text = "Status",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = if (flag) "Running" else "Ended",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Pick Up Date and Time
-            Text(
-                text = "Pick Up Date and Time",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = trip.pickUpDate,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Pick Up Location
-            Text(
-                text = "Pick Up Location",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = trip.pickUpLocation,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Delivery Location
-            Text(
-                text = "Delivery Location",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = trip.deliveryLocation,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Truck Image
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(MaterialTheme.shapes.medium)
-                ) {
-                    val painter = rememberImagePainter(data = truckImage, builder = {
-                        crossfade(true)
-                        placeholder(R.drawable.flatbed)
-                    })
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(MaterialTheme.shapes.medium)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Truck Capacity
-            Text(
-                text = "Truck Capacity",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = trip.truckCapacity.toString(),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            // Bid Text and TextField
-            TextField(
-                value = str, // Use state to hold the bid value
-                onValueChange = {}, // Update state on value change
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                shape = MaterialTheme.shapes.medium,
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            BlinkingButton(text = str, color = Color(0xFF008B8B), onClick = {})
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}*/
 
 @Composable
 fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCallBack) {
     // Replace with actual TripBrief data
+    var assigned by remember {
+        mutableStateOf("")
+    }
+    var ongoing by remember {
+        mutableStateOf(false)
+    }
     var creator by remember {
         mutableStateOf("")
     }
@@ -279,7 +100,8 @@ fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCal
                 pickUpDivision = document.getString("Pick Up Division") ?: ""
                 creator = document.getString("Post Creator Name") ?: ""
                 creatorId = document.getString("Post Creator") ?: ""
-
+                assigned = document.getString("Assigned")?:""
+                ongoing = document.getBoolean("Ongoing")?:false
                 pickUpTime = document.getString("Pick Up Time") ?: ""
                 pickUpZilla = document.getString("Pick Up Zilla") ?: ""
                 deliveryDivision = document.getString("Delivery Division") ?: ""
@@ -312,7 +134,9 @@ fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCal
             truckCapacity = truckCapacity,
             goodsType = goodsType,
             truckType = truckType,
-            deliveryLocation = "$deliveryDivision, $deliveryZilla"
+            deliveryLocation = "$deliveryDivision, $deliveryZilla",
+            assigned = assigned,
+            ongoing = ongoing
         ),
         creator = creator,
         creatorId = creatorId,
@@ -367,7 +191,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Card(
-                        modifier=Modifier
+                        modifier= Modifier
                             .padding(10.dp)
                             .wrapContentSize(),
                         colors = CardDefaults.cardColors(

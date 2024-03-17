@@ -50,8 +50,8 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
             }
         }
     }
-    override fun register(email: String, password: String,name: String,username:String) {
-        if (email=="" || password=="" || name=="" || username==""){
+    override fun register(email: String, password: String,name: String,phone:String) {
+        if (email=="" || password=="" || name=="" || phone==""){
             Toast.makeText(
                 baseContext,
                 "Please fill up the fields correctly",
@@ -59,84 +59,55 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
             ).show()
             return
         }
-        val collectionPath = "Clients"
-
-        val dbb = FirebaseFirestore.getInstance()
-
-// Create a reference to the document
-        val documentReference = dbb.collection(collectionPath).document(username)
-
-        documentReference.get()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val documentSnapshot = task.result
-
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        // Document exists
-                        val data: Map<String, Any>? = documentSnapshot.data
-                        // Handle the data if needed
+        try {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "createUserWithEmail:success")
+                        val user = auth.currentUser
+                        updateUI(user)
+                        val uid= user?.uid
+                        val client= hashMapOf(
+                            "Name" to name,
+                            //"Username" to username,
+                            "Coin" to 10,
+                            "Email" to email,
+                            "Phone" to phone,
+                            "Password" to password,
+                            "Completed Trips" to 0,
+                            "Running Trips" to 0,
+                            "Score" to 0,
+                            "Rating" to 0,
+                            "Photo" to "https://firebasestorage.googleapis.com/v0/b/trucker-buddy-f7323.appspot.com/o/pp.jpg?alt=media&token=c86d8dc3-0f3d-42cd-a920-202fb46a0aa9"
+                        )
+                        if (uid != null) {
+                            db.collection("Clients").document(uid)
+                                .set(client, SetOptions.merge())
+                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+                        }
+                        val navigate=Intent(this@SignUpActivity,MainActivity::class.java)
+                        startActivity(navigate)
+                        finish()
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "createUserWithEmail:failure", task.exception)
                         Toast.makeText(
                             baseContext,
-                            "This username is already taken",
+                            "Authentication failed.",
                             Toast.LENGTH_SHORT,
                         ).show()
-                    } else {
-                        // Document does not exist
-                        try {
-                            auth.createUserWithEmailAndPassword(email, password)
-                                .addOnCompleteListener(this) { task ->
-                                    if (task.isSuccessful) {
-                                        // Sign in success, update UI with the signed-in user's information
-                                        Log.d(TAG, "createUserWithEmail:success")
-                                        val user = auth.currentUser
-                                        updateUI(user)
-                                        val uid= user?.uid
-                                        val client= hashMapOf(
-                                            "Name" to name,
-                                            "Username" to username,
-                                            "Email" to email,
-                                            "Phone" to "Not Provided",
-                                            "Password" to password,
-                                            "Completed Trips" to 0,
-                                            "Running Trips" to 0,
-                                            "Score" to 0,
-                                            "Rating" to 0,
-                                            "Photo" to ""
-                                        )
-                                        if (uid != null) {
-                                            db.collection("Clients").document(uid)
-                                                .set(client, SetOptions.merge())
-                                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-                                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
-                                        }
-                                        val navigate=Intent(this@SignUpActivity,MainActivity::class.java)
-                                        startActivity(navigate)
-                                        finish()
-                                    } else {
-                                        // If sign in fails, display a message to the user.
-                                        Log.w(TAG, "createUserWithEmail:failure", task.exception)
-                                        Toast.makeText(
-                                            baseContext,
-                                            "Authentication failed.",
-                                            Toast.LENGTH_SHORT,
-                                        ).show()
-                                        updateUI(null)
-                                    }
-                                }
-                        }catch (e:Exception){
-                            Toast.makeText(
-                                baseContext,
-                                "Please fill up the fields correctly",
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                        }
+                        updateUI(null)
                     }
-                } else {
-                    // An error occurred while retrieving the document
                 }
-            }
-
-
+        }catch (e:Exception){
+            Toast.makeText(
+                baseContext,
+                "Please fill up the fields correctly",
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
     }
 
     override fun goToLoginScreen() {

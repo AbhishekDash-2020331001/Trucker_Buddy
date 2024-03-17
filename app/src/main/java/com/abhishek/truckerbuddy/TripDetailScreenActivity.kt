@@ -53,16 +53,33 @@ class TripDetailScreenActivity : ComponentActivity(),TripDetailScreenCallBack {
 
     override fun placeBid(tripId: String, tripCreatorId: String, bidAmount: String) {
         val currentUser=auth.currentUser
+        if (currentUser != null) {
+            if(!currentUser.isEmailVerified){
+                Toast.makeText(
+                    baseContext,
+                    "Please verify your mail first!",
+                    Toast.LENGTH_SHORT,
+                ).show()
+                return
+            }
+
+        }
         val uid= currentUser?.uid
         val dateFormat = SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault())
         val currentDate = dateFormat.format(Date())
+        val bidId="$tripId-$uid-$tripCreatorId-$currentDate"
         val bid= hashMapOf(
             "Trip Id" to tripId,
             "Bidder Id" to uid,
             "Creator Id" to tripCreatorId,
-            "Bid Amount" to bidAmount
+            "Bid Amount" to bidAmount,
+            "Bid Id" to bidId,
+            "Deal Due" to true,
+            "Deal Accepted" to false,
+            "Driver Replied" to false,
+            "Deal Sent" to false
         )
-        val bidId="$tripId-$uid-$tripCreatorId-$currentDate"
+
         db.collection("Bids")
             .document(bidId)
             .set(bid, SetOptions.merge())

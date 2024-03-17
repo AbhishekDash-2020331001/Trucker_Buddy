@@ -67,7 +67,10 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
                             .whereEqualTo("Post Creator", currentUser.uid)
                             .get()
                             .addOnSuccessListener { documents ->
+                                trips= emptyList()
                                 for (document in documents) {
+                                    val assigned=document.getString("Assigned")?:""
+                                    val ongoing=document.getBoolean("Ongoing")==true
                                     val pickUpDivision=document.getString("Pick Up Division")?:""
                                     val pickUpZilla=document.getString("Pick Up Zilla")?:""
                                     val deliveryDivision=document.getString("Delivery Division")?:""
@@ -100,7 +103,9 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
                                         truckType = name?:"",
                                         goodsType = document.getString("Type of Good")?:"",
                                         truckCapacity = highestCapacity?:0,
-                                        tripId = document.id
+                                        tripId = document.id,
+                                        assigned = assigned,
+                                        ongoing = ongoing
                                     )
                                 }
                             }
@@ -113,6 +118,7 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
             }
         }
     }
+
 
     override fun viewResponses(tripId: String) {
         Log.d(TAG,tripId)

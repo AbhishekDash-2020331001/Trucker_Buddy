@@ -47,9 +47,6 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
     var profileCallBack=this
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-// ... (imports and class definition)
-
         setContent {
             TruckerBuddyTheme {
                 Surface(
@@ -63,7 +60,11 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                     var completedTrips by remember { mutableIntStateOf(0) }
                     var runningTrips by remember { mutableIntStateOf(0) }
                     var rating by remember { mutableStateOf(0.0) }
+                    var coin by remember{ mutableIntStateOf(0) }
                     var profilePictureUrl by remember { mutableStateOf<String?>("https://firebasestorage.googleapis.com/v0/b/trucker-buddy-f7323.appspot.com/o/pp.jpg?alt=media&token=c86d8dc3-0f3d-42cd-a920-202fb46a0aa9") }
+                    var deals by remember {
+                        mutableIntStateOf(0)
+                    }
 
                     auth = Firebase.auth
                     db = Firebase.firestore
@@ -91,6 +92,8 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                         val completedTripsList =
                                             documentSnapshot.get("Completed Trips") as? List<String>
                                         completedTrips = completedTripsList?.size ?: 0
+                                        val dealList=documentSnapshot.get("Received Deal Request") as? List<String>
+                                        deals=dealList?.size?:0
 
                                         // Retrieve Running Trips as a List<String>
                                         val runningTripsList =
@@ -98,6 +101,7 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                         runningTrips = runningTripsList?.size ?: 0
                                         rating = documentSnapshot.getDouble("Rating") ?: 0.0
                                         profilePictureUrl = documentSnapshot.getString("Photo") ?: ""
+                                        coin = documentSnapshot.getDouble("Coin")?.toInt() ?: 0
                                     } else {
                                         // Document does not exist, handle accordingly
                                     }
@@ -137,7 +141,9 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                     runningTrips = runningTrips,
                                     userRating = rating,
                                     emailVerified = it.isEmailVerified,
-                                    profileCallBack = profileCallBack
+                                    profileCallBack = profileCallBack,
+                                    deals = deals,
+                                    coin = coin
                                 )
                             }
                         }
@@ -151,6 +157,13 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         val intent= Intent(this@ProfileActivity,FeedActivity::class.java)
         startActivity(intent)
         finish()
+    }
+    override fun showToast(coin:Int){
+        Toast.makeText(
+            baseContext,
+            "You Have $coin Coins Left",
+            Toast.LENGTH_SHORT,
+        ).show()
     }
 
     override fun myRunningTrips() {
@@ -195,6 +208,11 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         val intent= Intent(this@ProfileActivity,MainActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    override fun gotoReceivedBid() {
+        val intent=Intent(this@ProfileActivity,MyBidsActivity::class.java)
+        startActivity(intent)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

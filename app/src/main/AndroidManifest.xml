@@ -13,6 +13,11 @@
         android:theme="@style/Theme.TruckerBuddy"
         tools:targetApi="31">
         <activity
+            android:name=".MyBidsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_my_bids"
+            android:theme="@style/Theme.TruckerBuddy" />
+        <activity
             android:name=".ForgetPassActivity"
             android:exported="false"
             android:label="@string/title_activity_forget_pass"

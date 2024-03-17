@@ -71,8 +71,10 @@ class MainActivity : ComponentActivity(),LoginCallBack {
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser
                     updateUI(user)
+                    println("Login successful")
                     val intent=Intent(this@MainActivity,ProfileActivity::class.java)
                     startActivity(intent)
+                    finish()
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithEmail:failure", task.exception)

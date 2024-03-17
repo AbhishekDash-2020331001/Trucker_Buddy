@@ -11,7 +11,7 @@ interface LoginCallBack{
 }
 
 interface SignUpCallBack{
-    fun register(email: String, password: String,name:String,username:String)
+    fun register(email: String, password: String,name:String,phone:String)
     fun goToLoginScreen()
 }
 
@@ -44,6 +44,11 @@ interface FeedCallBack{
     fun gotoProfileScreen()
 }
 
+interface MyBidsCallBack{
+    fun acceptDeal(bidId: String,bidderId: String, tripId: String)
+    fun rejectDeal(bidId: String,bidderId: String,creatorId: String)
+}
+
 interface ProfileCallBack{
     fun gotoPost()
     fun gotoSettings()
@@ -51,15 +56,22 @@ interface ProfileCallBack{
     fun myRunningTrips()
     fun sendVerificationMail()
     fun signOut()
+    fun gotoReceivedBid()
+    fun showToast(coin:Int)
 }
 
 interface MyRunningTripsCallBack{
     fun viewResponses(tripId: String)
 }
 interface ViewResponsesScreenCallBack{
-  fun showBidderProfile(bidderId:String)
+  fun showBidderProfile(bidderId:String,bidId:String)
 }
 
 interface ForgetPassActivityCallBack{
     fun sendLink(email: String)
+}
+
+interface BidderProfileScreenActivityCallBack{
+    fun sendDeal(bidId: String,bidderId: String,currentUserUid: String)
+    fun cancelDeal(bidId: String,bidderId: String,currentUserUid : String)
 }

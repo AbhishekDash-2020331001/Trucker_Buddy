@@ -2,183 +2,96 @@ package com.abhishek.truckerbuddy.composables
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhishek.truckerbuddy.MyRunningTripsCallBack
 import com.abhishek.truckerbuddy.TripBrief
 import java.time.LocalDateTime
 
-/*data class Trip(
-    val tripId: String,
-    val tripCreatorName: String,
-    val pickUpLocation: String,
-    val deliveryLocation: String,
-    val typeOfGood: String,
-    val numberOfResponses: Int,
-    val bestResponse: String
-)*/
-
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MyRunningTrips(myRunningTripsCallBack: MyRunningTripsCallBack,trips:List<TripBrief>){
-    LazyColumn(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (trips.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .padding(8.dp)
-                    )
-                }
-            }
-        }
-        else{
-            items(trips) {
-                TripCard(trip = it, str = if(isPickUpDateTimeInFuture(pickUpDate = it.pickUpDate, pickUpTime = it.pickUpTime, currentDateTime = LocalDateTime.now())) "View Responses" else "Closed", onPlaceBidClick = {myRunningTripsCallBack.viewResponses(it.tripId)})
+fun MyRunningTrips(myRunningTripsCallBack: MyRunningTripsCallBack, trips: List<TripBrief>) {
+    // Separate running and non-running trips
+    val (runningTrips, nonRunningTrips) = trips.partition { isPickUpDateTimeInFuture(pickUpDate = it.pickUpDate, pickUpTime = it.pickUpTime, currentDateTime = LocalDateTime.now()) }
 
-            }
-        }
+    val context = LocalContext.current
 
-
-    }
-
-}
-
-/*
-@Composable
-fun TripCard(
-    tripId: String,
-    tripCreatorName: String,
-    pickUpLocation: String,
-    deliveryLocation: String,
-    typeOfGood: String,
-    numberOfResponses: Int,
-    bestResponse: String,
-    onResponsesClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // Trip ID and Creator Name
-            Text(
-                text = "Trip ID: $tripId",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.primary
+    Scaffold(
+        /*topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color.Black,
+                    titleContentColor = Color.White
+                ),
+                title = { Text("My Trips") },
+                modifier = Modifier.padding(start=4.dp, bottom = 4.dp,end=4.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Created by: $tripCreatorName",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Pick-up Location
-            ItemWithIcon(icon = Icons.Default.LocationOn, text = pickUpLocation)
-
-            // Delivery Location
-            ItemWithIcon(icon = Icons.Default.LocationOn, text = deliveryLocation)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Type of Good
-            ItemWithIcon(icon = Icons.Default.Category, text = typeOfGood)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Responses Section
-            Row(
+        },*/
+        content = {innerpadding->
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                state = rememberLazyListState()
             ) {
-                ItemWithIcon(icon = Icons.Default.Chat, text = "Responses: $numberOfResponses")
+                if (runningTrips.isNotEmpty()) {
+                    items(runningTrips) {
+                        MyRunningTripsCard(
+                            trip = it,
+                            str = if(it.ongoing)"Trip Ongoing" else "View Responses",
+                            onPlaceBidClick = { myRunningTripsCallBack.viewResponses(it.tripId) }
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                if (nonRunningTrips.isNotEmpty()) {
+                    items(nonRunningTrips) {
+                        MyRunningTripsCard(
+                            trip = it,
+                            str = "Closed",
+                            onPlaceBidClick = { myRunningTripsCallBack.viewResponses(it.tripId) }
+                        )
+                    }
+                }
 
-                TextButton(
-                    onClick = onResponsesClick,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(text = "View Responses")
+                if (trips.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ItemWithIcon(icon: ImageVector, text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-
-@Preview
-@Composable
-fun check(){
-    TripCard(
-        tripId = "123456",
-        tripCreatorName = "John Doe",
-        pickUpLocation = "City A",
-        deliveryLocation = "City B",
-        typeOfGood = "Electronics",
-        numberOfResponses = 5,
-        bestResponse = "50 tk",
-        onResponsesClick = {
-            // Handle responses button click
         }
     )
-
 }
-*/
-
