@@ -8,6 +8,7 @@ interface LoginCallBack{
     fun doSignIn(email:String,password:String)
     fun goToRegScreen()
     fun gotoForgetPass()
+    fun sendLink(email: String)
 }
 
 interface SignUpCallBack{
@@ -39,7 +40,7 @@ interface TripDetailScreenCallBack{
 }
 
 interface FeedCallBack{
-    fun placeYourBid(tripId:String)
+    fun placeYourBid(tripId:String,creator:String)
     fun gotoPostScreen()
     fun gotoProfileScreen()
 }
@@ -51,7 +52,6 @@ interface MyBidsCallBack{
 
 interface ProfileCallBack{
     fun gotoPost()
-    fun gotoSettings()
     fun gotoFeed()
     fun myRunningTrips()
     fun sendVerificationMail()

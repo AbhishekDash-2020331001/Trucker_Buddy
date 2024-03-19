@@ -38,7 +38,7 @@ suspend fun getName(id: String): String {
         .get()
         .await()
 
-    // Replace "Name" with the actual field name used in your Firestore document
+
     return documentSnapshot.getString("Name") ?: ""
 }
 
@@ -61,19 +61,7 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
     ) {
         if (bidds.isEmpty()) {
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .padding(8.dp)
-                    )
-                }
+                CustomLoadingIndicator()
             }
         }
         else{
@@ -93,7 +81,7 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
                             .padding(5.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Bidder's Name Row with Show Bidder Profile Button
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -114,7 +102,7 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = bid.name, // Change this to the actual field you want to display
+                                    text = bid.name,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -143,9 +131,11 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
                             }
                         }
 
-                        // Bid Amount Row
+
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(start=4.dp, bottom = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 4.dp, bottom = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -155,7 +145,7 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = bid.bid.bidAmount, // Change this to the actual field you want to display
+                                text = bid.bid.bidAmount,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -169,7 +159,6 @@ fun BidderCard(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreen
 
 
 
-@OptIn(DelicateCoroutinesApi::class)
 suspend fun getDocuments(tripId: String): List<DocumentSnapshot> {
     val db = Firebase.firestore
     return db.collection("Bids")
@@ -180,7 +169,6 @@ suspend fun getDocuments(tripId: String): List<DocumentSnapshot> {
 }
 
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ViewResponsesScreen(bids: List<Bid>, viewResponsesScreenCallBack: ViewResponsesScreenCallBack) {
 

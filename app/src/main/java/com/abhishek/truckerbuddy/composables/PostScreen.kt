@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
+import androidx.compose.material.icons.automirrored.outlined.AirplaneTicket
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
@@ -107,19 +109,19 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
     val items = listOf(
         BottomNavigationItem(
             title = "Feed",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home
+            selectedIcon = Icons.AutoMirrored.Filled.AirplaneTicket,
+            unselectedIcon = Icons.AutoMirrored.Outlined.AirplaneTicket
         ),
         BottomNavigationItem(
             title = "Post",
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add
         ),
-        BottomNavigationItem(
+        /*BottomNavigationItem(
             title = "Settings",
             selectedIcon = Icons.Filled.Settings,
             unselectedIcon = Icons.Outlined.Settings
-        ),
+        ),*/
         BottomNavigationItem(
             title = "Profile",
             selectedIcon = Icons.Filled.Face,
@@ -129,10 +131,6 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
 
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(1)
-    }
-
-    var neededTruckType by remember {
-        mutableStateOf("")
     }
 
     var pickedDate by remember {
@@ -160,7 +158,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
     val formattedTime by remember {
         derivedStateOf {
             DateTimeFormatter
-                .ofPattern("hh:mm a") // Use 'a' to include AM or PM
+                .ofPattern("hh:mm a")
                 .format(pickedTime)
         }
     }
@@ -203,7 +201,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                 if (doc.exists()) {
                     val array = doc.get("Zilla") as? List<String>
                     if (array != null) {
-                        pickZillas = array.toList() // Set pickZillas with the new list
+                        pickZillas = array.toList()
                         Log.d(TAG, "Size ${pickZillas.size}")
                     }
                 }
@@ -222,7 +220,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                 if (doc.exists()) {
                     val array = doc.get("Zilla") as? List<String>
                     if (array != null) {
-                        deliveryZillas = array.toList() // Set deliveryZillas with the new list
+                        deliveryZillas = array.toList()
                         Log.d(TAG, "Size ${deliveryZillas.size}")
                     }
                 }
@@ -231,7 +229,6 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
             }
         }
     }
-
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -244,7 +241,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             if(selectedItemIndex==0){
                                 postCallBack.gotoFeed()
                             }
-                            else if(selectedItemIndex==3){
+                            else if(selectedItemIndex==2){
                                 postCallBack.gotoProfileScreen()
                             }
                         },
@@ -276,11 +273,11 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
         ){
             item {
                 Card(
-                    modifier=Modifier
-                        .padding(bottom=10.dp)
+                    modifier= Modifier
+                        .padding(bottom = 10.dp)
                         .fillMaxWidth()
                         .clickable {
-                                   dateDialogState.show()
+                            dateDialogState.show()
                         },
                     colors = CardDefaults.cardColors(
                         containerColor = Color.White
@@ -304,14 +301,14 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                         Text(text = formattedDate)
                     }
                 }
-                //Spacer(modifier = Modifier.height(24.dp))
+
                 Card(
-                    modifier=Modifier
-                        .padding(bottom=10.dp)
+                    modifier= Modifier
+                        .padding(bottom = 10.dp)
                         .wrapContentSize()
                         .fillMaxWidth()
                         .clickable {
-                                   timeDialogState.show()
+                            timeDialogState.show()
                         },
                     colors = CardDefaults.cardColors(
                         containerColor = Color.White
@@ -343,7 +340,6 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left line
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -351,7 +347,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             .fillMaxWidth(0.33f)
                     )
 
-                    // Text
+
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -366,7 +362,6 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             )
                     }
 
-                    // Right line
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -402,7 +397,9 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         ),
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded5,
@@ -430,7 +427,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left line
+
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -438,7 +435,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             .fillMaxWidth(0.33f)
                     )
 
-                    // Text
+
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -453,7 +450,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             )
                     }
 
-                    // Right line
+
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -475,12 +472,14 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded1)
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black, // Set the text color to black
+                            textColor = Color.Black,
                             cursorColor = Color.Black,
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         ),
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded1,
@@ -512,18 +511,20 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded2)
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black, // Set the text color to black
+                            textColor = Color.Black,
                             cursorColor = Color.Black,
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         ),
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded2,
                         onDismissRequest = { expanded2=false }
                     ) {
-                        pickZillas.forEach{ it ->
+                        pickZillas.forEach{
                             DropdownMenuItem(
                                 text = { Text(text = it) },
                                 onClick = {
@@ -544,7 +545,6 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left line
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -552,7 +552,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             .fillMaxWidth(0.33f)
                     )
 
-                    // Text
+
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -567,7 +567,7 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             )
                     }
 
-                    // Right line
+
                     Box(
                         modifier = Modifier
                             .background(Color.Gray)
@@ -591,12 +591,14 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded3)
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black, // Set the text color to black
+                            textColor = Color.Black,
                             cursorColor = Color.Black,
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         ),
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded3,
@@ -628,12 +630,14 @@ fun PostScreen(postCallBack: PostCallBack,truck: Truck, ptime: LocalTime, pdate:
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded4)
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black, // Set the text color to black
+                            textColor = Color.Black,
                             cursorColor = Color.Black,
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
                         ),
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expanded4,
@@ -723,14 +727,14 @@ data class Truck(val name: String, val imageRes: String, val highestCapacity: In
 fun TruckCard(truck: Truck, onclick: () -> Unit,default:Int) {
     val painter = rememberImagePainter(data = truck.imageRes, builder = {
         crossfade(true)
-        placeholder(drawableResId = default) // Replace with a placeholder image resource
+        placeholder(drawableResId = default)
     })
     Card(
-        modifier=Modifier
+        modifier= Modifier
             .padding(8.dp)
             .wrapContentSize()
             .clickable {
-                       onclick.invoke()
+                onclick.invoke()
             },
         colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -743,30 +747,30 @@ fun TruckCard(truck: Truck, onclick: () -> Unit,default:Int) {
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Truck Image on the left
+
             Image(
                 painter = painter,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(100.dp) // Adjust the image size as needed
+                    .size(100.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.background)
             )
 
-            Spacer(modifier = Modifier.width(16.dp)) // Increased spacing
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // Truck Details on the right
+
             Column {
-                // Truck Name
+
                 Text(
                     text = truck.name,
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Start,
                 )
 
-                Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Highest Capacity
+
                 Text(
                     text = "Highest Capacity: ${truck.highestCapacity}",
                     color = contentColorFor(MaterialTheme.colorScheme.background),

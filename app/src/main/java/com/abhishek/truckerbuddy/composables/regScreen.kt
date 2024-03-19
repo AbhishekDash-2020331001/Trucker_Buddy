@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -63,10 +62,9 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
         mutableStateOf("")
     }
     var name by remember{ mutableStateOf("") }
-    var username by remember{ mutableStateOf("") }
     var email by remember{ mutableStateOf("") }
     var password by remember{ mutableStateOf("") }
-    val (focusEmail,focusPassword,focusName,focusUsername,focusPhone) = remember { FocusRequester.createRefs()}
+    val (focusEmail,focusPassword,focusName,focusPhone) = remember { FocusRequester.createRefs()}
     val keyboardController =  LocalSoftwareKeyboardController.current
     var isPasswordVisible by remember{ mutableStateOf(false) }
 
@@ -116,7 +114,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                             label = { Text(text = "Email") },
                             shape = RoundedCornerShape(10.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black, // Set the text color to black
+                                textColor = Color.Black,
                                 cursorColor = Color.Black,
                                 focusedBorderColor = Color.Black,
                                 unfocusedBorderColor = Color.Black
@@ -138,7 +136,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                             label = { Text(text = "Password") },
                             shape = RoundedCornerShape(10.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black, // Set the text color to black
+                                textColor = Color.Black,
                                 cursorColor = Color.Black,
                                 focusedBorderColor = Color.Black,
                                 unfocusedBorderColor = Color.Black
@@ -174,7 +172,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                             shape = RoundedCornerShape(10.dp),
 
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black, // Set the text color to black
+                                textColor = Color.Black,
                                 cursorColor = Color.Black,
                                 focusedBorderColor = Color.Black,
                                 unfocusedBorderColor = Color.Black
@@ -198,7 +196,7 @@ fun RegScreen(signUpCallBack: SignUpCallBack){
                             shape = RoundedCornerShape(10.dp),
 
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = Color.Black, // Set the text color to black
+                                textColor = Color.Black,
                                 cursorColor = Color.Black,
                                 focusedBorderColor = Color.Black,
                                 unfocusedBorderColor = Color.Black

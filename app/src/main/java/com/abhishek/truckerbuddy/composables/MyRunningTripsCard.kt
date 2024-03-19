@@ -1,6 +1,5 @@
 package com.abhishek.truckerbuddy.composables
 
-import android.text.BoringLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,14 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.StarHalf
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarHalf
-import androidx.compose.material.icons.rounded.StarOutline
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -61,8 +57,11 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
     var givenRating by remember {
         mutableStateOf(4.0)
     }
-    var isHalfStar by remember {
-        mutableStateOf((givenRating) % 1 != 0.0)
+    var tripId by remember {
+        mutableStateOf(trip.tripId)
+    }
+    var rated by remember {
+        mutableStateOf(trip.rated)
     }
     var isDialog by remember {
         mutableStateOf(false)
@@ -71,7 +70,7 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
         mutableStateOf(str)
     }
     var assigned by remember {
-        mutableStateOf("")
+        mutableStateOf(trip.assigned)
     }
     var statusText by remember {
         mutableStateOf("")
@@ -93,21 +92,18 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
         statusText = "Marked as done"
 
     }
-    // State to track whether the trip is marked as done or not
-    //var flag=false
     val db = Firebase.firestore
 
 
 
     db.collection("Trips")
         .document(trip.tripId)
-        .get() // Use SetOptions.merge() to merge the new values with existing ones
+        .get()
         .addOnSuccessListener {
             isTripDone = it.getBoolean("Running") == false
             assigned = it.getString("Assigned") ?: ""
         }
         .addOnFailureListener { e ->
-            // Handle failure if needed
         }
 
     db.collection("Trucks")
@@ -118,7 +114,9 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                 truckImage = document.getString("Photo").toString()
             }
         }
-        .addOnFailureListener { e -> /* Handle failure */ }
+        .addOnFailureListener {
+
+        }
 
     Card(
         modifier = Modifier
@@ -134,12 +132,10 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Row for pick-up details
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Column for pick-up details
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -186,14 +182,14 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-                // Column for tick mark button and truck image
+
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp),
                     horizontalAlignment = Alignment.End
                 ) {
-                    // Tick mark button
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -208,7 +204,7 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                             },
                             modifier = Modifier.size(32.dp)
                         ) {
-                            // Use different icons based on the state
+
                             if (isTripDone) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
@@ -221,7 +217,6 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                                 )
                             }
                         }
-                        // Display status text
                         Text(
                             text = statusText,
                             color = color,
@@ -230,7 +225,7 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                     }
 
 
-                    // Load truck image using Coil
+
                     val painter = rememberImagePainter(data = truckImage, builder = {
                         crossfade(true)
                         placeholder(R.drawable.truckl)
@@ -243,7 +238,7 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                             .width(150.dp)
                             .height(150.dp)
                             .clip(MaterialTheme.shapes.medium)
-                            .padding(top = 8.dp) // Adjust the top padding to move the image up
+                            .padding(top = 8.dp)
                     )
                     Button(
                         onClick = {
@@ -270,7 +265,6 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                 }
             }
 
-            // Truck type and capacity
             Text(
                 text = "Truck Type: ${trip.truckType}",
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = MaterialTheme.typography.bodyMedium.fontWeight),
@@ -284,71 +278,145 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Place your bid button with blinking animation
+
             BlinkingButton(text = strr, color = color, onClick = onPlaceBidClick)
         }
     }
     if (isDialog) {
         Dialog(onDismissRequest = {
             isDialog = false
-            uploadRating(rating = givenRating, id = assigned)
         }) {
-            Card(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .wrapContentSize(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(10.dp)
-            ) {
-                Column(
+            if(assigned=="null"){
+                Card(
                     modifier = Modifier
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Rate Your Driver",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row {
-                        for (index in 1..5) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(if (index <= givenRating) Color(0xFF00FFFF) else Color.White)
-                                    .clickable {
-                                        givenRating = index.toDouble()
-                                    }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Star,
-                                    contentDescription = "Star",
-                                    tint = Color.Yellow,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .align(Alignment.Center)
-                                )
-                            }
-                        }
+                        .padding(10.dp)
+                        .wrapContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(10.dp)
+                ){
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "No driver assigned for this trip")
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            isDialog = false
-                            uploadRating(rating = givenRating, id = assigned)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008B8B))
+                }
+            }
+            else if(rated){
+                Card(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .wrapContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(10.dp)
+                ){
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "You have already rated")
+                    }
+                }
+            }
+            else{
+                Card(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .wrapContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(10.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Submit",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
+                            text = "Rate Your Driver",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row {
+                            for (index in 1..5) {
+                                if(index<=givenRating){
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(start = 2.dp)
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                brush = Brush.linearGradient(
+                                                    colors = listOf(Color(0xFF00FFFF), Color(0xFF008080))
+                                                )
+                                            )
+                                            .clickable {
+                                                givenRating= index.toDouble()
+                                            }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Star,
+                                            contentDescription = "Coins",
+                                            tint = Color(0xFFFFD700),
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .align(Alignment.Center)
+                                        )
+                                    }
+
+                                }
+                                else{
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(start = 2.dp)
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                brush = Brush.linearGradient(
+                                                    colors = listOf(Color(0xFF00FFFF), Color(0xFF008080))
+                                                )
+                                            )
+                                            .clickable {
+                                                givenRating=index.toDouble()
+                                            }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Star,
+                                            contentDescription = "Coins",
+                                            tint = Color.White, // Gold color
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .align(Alignment.Center)
+                                        )
+                                    }
+
+                                }
+
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                isDialog = false
+                                uploadRating(rating = givenRating, driverId = assigned, tripId = tripId)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF008B8B))
+                        ) {
+                            Text(
+                                text = "Submit",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -357,35 +425,42 @@ fun MyRunningTripsCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBi
 }
 
 
-fun uploadRating(rating: Double, id:String){
+fun uploadRating(rating: Double, driverId:String, tripId: String){
+
     val db=Firebase.firestore
     db
         .collection("Clients")
-        .document(id)
+        .document(driverId)
         .update("Score",FieldValue.increment(rating))
     db
         .collection("Clients")
-        .document(id)
+        .document(driverId)
         .update("Completed Trips",FieldValue.increment(1))
+    db
+        .collection("Trips")
+        .document(tripId)
+        .update(
+            mapOf(
+                "Rated" to true
+            )
+        )
 }
 
 fun toggleRunning(tripId: String, isTripDone: Boolean) {
     val db = Firebase.firestore
 
-    // Create a map with the new values, including the "Running" field
     val updateMap = hashMapOf(
         "Running" to !isTripDone
-        //"timestamp" to FieldValue.serverTimestamp() // You can include a timestamp field if needed
+
     )
 
-    // Set the entire document in the "Trips" collection with the specified tripId
     db.collection("Trips")
         .document(tripId)
-        .set(updateMap, SetOptions.merge()) // Use SetOptions.merge() to merge the new values with existing ones
+        .set(updateMap, SetOptions.merge())
         .addOnSuccessListener {
-            // Handle success if needed
+
         }
         .addOnFailureListener { e ->
-            // Handle failure if needed
+
         }
 }

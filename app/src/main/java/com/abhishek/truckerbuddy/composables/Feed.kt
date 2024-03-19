@@ -23,6 +23,10 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.AirplaneTicket
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
@@ -65,20 +69,14 @@ import com.abhishek.truckerbuddy.R
 import com.abhishek.truckerbuddy.TripBrief
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Date
 import java.util.Locale
 
-/*data class TripBrief(
-    val pickUpTime:String,
-    val tripId:String,
-    val pickUpDate: String,
-    val pickUpLocation: String,
-    val deliveryLocation: String,
-    val truckType: String,
-    val truckCapacity: Int,
-    val goodsType: String
-)*/
+
 
 @Composable
 fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: () -> Unit = {}, str:String="Place Your Bid") {
@@ -102,7 +100,7 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
 
         }
     Card(
-        modifier=Modifier
+        modifier= Modifier
             .padding(10.dp)
             .wrapContentSize(),
         colors = CardDefaults.cardColors(
@@ -115,12 +113,10 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Row for pick-up details
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Column for pick-up details
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -167,7 +163,6 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-                // Load truck image using Coil
                 val painter = rememberImagePainter(data = truckImage, builder = {
                     crossfade(true)
                     placeholder(R.drawable.truckl)
@@ -180,11 +175,10 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
                         .width(150.dp)
                         .height(150.dp)
                         .clip(MaterialTheme.shapes.medium)
-                        .padding(top = 8.dp) // Adjust the top padding to move the image up
+                        .padding(top = 8.dp)
                 )
             }
 
-            // Truck type and capacity
             Text(
                 text = "Truck Type: ${trip.truckType}",
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
@@ -198,7 +192,6 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Place your bid button with blinking animation
             BlinkingButton(text = str, color = if(str=="Closed")Color.Red else Color(0xFF008B8B), onClick = onPlaceBidClick)
         }
     }
@@ -207,8 +200,6 @@ fun TripCard(trip: TripBrief, modifier: Modifier = Modifier, onPlaceBidClick: ()
 @Composable
 fun BlinkingButton(text: String, color: Color, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "buttonColor")
-
-    // Animation parameters
     val animatedColor by infiniteTransition.animateColor(
         initialValue = color,
         targetValue = Color.Transparent,
@@ -235,80 +226,27 @@ fun BlinkingButton(text: String, color: Color, onClick: () -> Unit) {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedScreen(feedCallBack: FeedCallBack) {
-    var truckImg by remember { mutableStateOf("") }
-    var trips by remember { mutableStateOf<List<TripBrief>>(emptyList()) }
+fun FeedScreen(feedCallBack: FeedCallBack, trips : List<TripBrief>) {
+
     var searchQuery by remember { mutableStateOf("") }
     val currentDateTime = LocalDateTime.now()
-    val db = Firebase.firestore
-    var cnt=0
-    db.collection("Trips")
-        .whereEqualTo("Running", true)
-        .get()
-        .addOnSuccessListener { documents ->
-            println("hahaha ${documents.size()}")
-            trips = emptyList()
-            for (document in documents) {
-                // ... (existing code for retrieving trips remains unchanged)
-                Log.d(TAG, "${document.id} => ${document.data}")
-                val pickUpDivision = document.getString("Pick Up Division") ?: ""
-                val pickUpZilla = document.getString("Pick Up Zilla") ?: ""
-                val deliveryDivision = document.getString("Delivery Division") ?: ""
-                val deliveryZilla = document.getString("Delivery Zilla") ?: ""
-                val truckMap = document.get("Needed Truck") as? Map<String, Any>
-                var name: String? = null
-                var highestCapacity: Int? = null
-                if (truckMap != null) {
-                    // Retrieve values associated with keys
-                    name = truckMap["name"] as? String
-                    highestCapacity = (truckMap["highestCapacity"] as? Long)?.toInt()
 
-                    if (name != null && highestCapacity != null) {
-                        // Use the retrieved values
-                        println("Name: $name")
-                        println("Highest Capacity: $highestCapacity")
-                    } else {
-                        // Handle the case where values are null or not of the expected type
-                        println("Values are null or not of the expected type.")
-                    }
-                } else {
-                    // Handle the case where "Truck" is not a map or is null
-                    println("Truck field is not a map or is null.")
-                }
-                trips += TripBrief(
-                    pickUpTime = document.getString("Pick Up Time") ?: "",
-                    pickUpDate = document.getString("Pick Up Date") ?: "",
-                    pickUpLocation = "$pickUpDivision, $pickUpZilla",
-                    deliveryLocation = "$deliveryDivision, $deliveryZilla",
-                    truckType = name ?: "",
-                    goodsType = document.getString("Type of Good") ?: "",
-                    truckCapacity = highestCapacity ?: 0,
-                    tripId = document.id,
-                    assigned = document.getString("Assigned")?:"",
-                    ongoing = document.getBoolean("Ongoing")?:false
-                )
 
-            }
-        }
-        .addOnFailureListener { exception ->
-            Log.w(TAG, "Error getting documents: ", exception)
-        }
 
-    // Use a derived state to filter trips based on the search query
     val filteredTrips by remember(searchQuery, trips) {
         derivedStateOf {
             if (searchQuery.isBlank()) {
-                // If search query is blank, show all trips
+
                 trips.filter { trip ->
-                    // Check if the pick-up date and time are in the future
-                    isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime, currentDateTime)
+
+                    isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime)
                 }
             } else {
-                // Filter trips based on the search query
+
                 trips.filter { trip ->
                     (trip.pickUpLocation.contains(searchQuery, ignoreCase = true) ||
                             trip.deliveryLocation.contains(searchQuery, ignoreCase = true)) &&
-                            isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime, currentDateTime)
+                            isPickUpDateTimeInFuture(trip.pickUpDate, trip.pickUpTime)
                 }
             }
         }
@@ -321,29 +259,28 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                     Text(text = "Feed")
                 },
                 actions = {
-                    // Add a search TextField
+
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { newValue ->
                             searchQuery = newValue
-                            // You can perform search or filtering based on the searchQuery
+
                         },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search Icon"
-                                //modifier = Modifier.padding(end = 2.dp)
+
                             )
                         },
                         placeholder = {
                             Text(text = "Search...")
                         },
                         modifier = Modifier
-                            //.padding(end = 16.dp)
                             .fillMaxWidth()
                             .wrapContentSize(Alignment.Center),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black, // Set the text color to black
+                            textColor = Color.Black,
                             cursorColor = Color.Black,
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black
@@ -357,19 +294,19 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                 val items = listOf(
                     BottomNavigationItem(
                         title = "Feed",
-                        selectedIcon = Icons.Filled.Home,
-                        unselectedIcon = Icons.Outlined.Home
+                        selectedIcon = Icons.AutoMirrored.Filled.AirplaneTicket,
+                        unselectedIcon = Icons.AutoMirrored.Outlined.AirplaneTicket
                     ),
                     BottomNavigationItem(
                         title = "Post",
                         selectedIcon = Icons.Filled.Add,
                         unselectedIcon = Icons.Outlined.Add
                     ),
-                    BottomNavigationItem(
+                    /*BottomNavigationItem(
                         title = "Settings",
                         selectedIcon = Icons.Filled.Settings,
                         unselectedIcon = Icons.Outlined.Settings
-                    ),
+                    ),*/
                     BottomNavigationItem(
                         title = "Profile",
                         selectedIcon = Icons.Filled.Face,
@@ -386,10 +323,9 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                         selected = selectedItemIndex == index,
                         onClick = {
                             selectedItemIndex = index
-                            // navController.navigate(item.title)
                             if (selectedItemIndex == 1) {
                                 feedCallBack.gotoPostScreen()
-                            } else if (selectedItemIndex == 3) {
+                            } else if (selectedItemIndex == 2) {
                                 feedCallBack.gotoProfileScreen()
                             }
                         },
@@ -422,8 +358,8 @@ fun FeedScreen(feedCallBack: FeedCallBack) {
                 .padding(bottom = 25.dp, start = 10.dp, end = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(filteredTrips) { // Use filteredTrips instead of trips
-                TripCard(trip = it, onPlaceBidClick = { feedCallBack.placeYourBid(it.tripId) })
+            items(filteredTrips) {
+                TripCard(trip = it, onPlaceBidClick = { feedCallBack.placeYourBid(it.tripId,it.creator) })
             }
         }
     }
@@ -437,8 +373,6 @@ fun BlinkingText(
     size: Float
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "color")
-
-    // Animation parameters
     val animatedColor by infiniteTransition.animateColor(
         initialValue = color,
         targetValue = Color.Transparent,
@@ -462,9 +396,15 @@ fun BlinkingText(
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-fun isPickUpDateTimeInFuture(pickUpDate: String, pickUpTime: String, currentDateTime: LocalDateTime): Boolean {
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd yyyy hh:mm a", Locale.ENGLISH)
-    val pickUpDateTime = LocalDateTime.parse("$pickUpDate $pickUpTime", dateTimeFormatter)
-    return pickUpDateTime.isAfter(currentDateTime)
+fun isPickUpDateTimeInFuture(pickUpDate: String, pickUpTime: String): Boolean {
+    val dateTimeString = "$pickUpDate $pickUpTime"
+    val dateFormat = SimpleDateFormat("MMM dd yyyy hh:mm a", Locale.ENGLISH)
+
+    return try {
+        val pickUpDateTime = dateFormat.parse(dateTimeString)
+        val currentTime = Date()
+        pickUpDateTime?.after(currentTime) ?: false
+    } catch (e: Exception) {
+        false
+    }
 }

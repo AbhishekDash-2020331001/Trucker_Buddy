@@ -27,8 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abhishek.truckerbuddy.composables.CustomLoadingIndicator
 import com.abhishek.truckerbuddy.composables.ProfileScreen
 import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
@@ -51,13 +53,16 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
             TruckerBuddyTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color.Black
                 ) {
+                    var score by remember {
+                        mutableStateOf(0.0)
+                    }
                     var name by remember { mutableStateOf("Loading") }
                     var username by remember { mutableStateOf("Loading") }
                     var email by remember { mutableStateOf("Loading") }
                     var phone by remember { mutableStateOf("Loading") }
-                    var completedTrips by remember { mutableIntStateOf(0) }
+                    var completedTrips by remember { mutableStateOf(0.0) }
                     var runningTrips by remember { mutableIntStateOf(0) }
                     var rating by remember { mutableStateOf(0.0) }
                     var coin by remember{ mutableIntStateOf(0) }
@@ -70,32 +75,30 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                     db = Firebase.firestore
 
                     LaunchedEffect(auth.currentUser) {
-                        // Check if the user is signed in
                         val currentUser = auth.currentUser
                         if (currentUser != null) {
                             val uid = currentUser.uid
 
-                            // Retrieve data from Firestore based on UID
                             val clientCollectionRef = db.collection("Clients")
                             val userDocumentRef = clientCollectionRef.document(uid)
 
                             userDocumentRef.get()
                                 .addOnSuccessListener { documentSnapshot ->
                                     if (documentSnapshot.exists()) {
-                                        // Document exists, extract and update data
+
                                         name = documentSnapshot.getString("Name") ?: ""
                                         username = documentSnapshot.getString("Username") ?: ""
                                         email = documentSnapshot.getString("Email") ?: ""
                                         phone = documentSnapshot.getString("Phone") ?: ""
+                                        score = documentSnapshot.getDouble("Score")?:0.0
 
-                                        // Retrieve Completed Trips as a List<String>
                                         val completedTripsList =
                                             documentSnapshot.get("Completed Trips") as? List<String>
-                                        completedTrips = completedTripsList?.size ?: 0
+                                        completedTrips = documentSnapshot.getDouble("Completed Trips")?:0.0
                                         val dealList=documentSnapshot.get("Received Deal Request") as? List<String>
                                         deals=dealList?.size?:0
 
-                                        // Retrieve Running Trips as a List<String>
+
                                         val runningTripsList =
                                             documentSnapshot.get("Running Trips") as? List<String>
                                         runningTrips = runningTripsList?.size ?: 0
@@ -103,51 +106,42 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
                                         profilePictureUrl = documentSnapshot.getString("Photo") ?: ""
                                         coin = documentSnapshot.getDouble("Coin")?.toInt() ?: 0
                                     } else {
-                                        // Document does not exist, handle accordingly
+
                                     }
 
                                 }
                                 .addOnFailureListener { exception ->
-                                    // Handle failures in retrieving data
+
                                 }
                         } else {
-                            // User is not signed in, handle accordingly (e.g., redirect to login)
+
                         }
                     }
 
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (name == "Loading") {
-                            // Display loading indicator or handle loading state
-                            // For example, you can show a loading spinner
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .padding(8.dp)
+                    if (name == "Loading") {
+
+                        CustomLoadingIndicator()
+                    } else {
+
+                        auth.currentUser?.let {
+                            ProfileScreen(
+                                profilePictureUrl = profilePictureUrl,
+                                name = name,
+                                username = username,
+                                email = email,
+                                phoneNumber = phone,
+                                completedTrips = completedTrips,
+                                runningTrips = runningTrips,
+                                userRating = rating,
+                                emailVerified = it.isEmailVerified,
+                                profileCallBack = profileCallBack,
+                                deals = deals,
+                                coin = coin,
+                                score = score
                             )
-                        } else {
-                            // Data has been loaded, call ProfileScreen
-                            auth.currentUser?.let {
-                                ProfileScreen(
-                                    profilePictureUrl = profilePictureUrl,
-                                    name = name,
-                                    username = username,
-                                    email = email,
-                                    phoneNumber = phone,
-                                    completedTrips = completedTrips,
-                                    runningTrips = runningTrips,
-                                    userRating = rating,
-                                    emailVerified = it.isEmailVerified,
-                                    profileCallBack = profileCallBack,
-                                    deals = deals,
-                                    coin = coin
-                                )
-                            }
                         }
                     }
+
                 }
             }
         }
@@ -156,7 +150,6 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
     override fun gotoFeed() {
         val intent= Intent(this@ProfileActivity,FeedActivity::class.java)
         startActivity(intent)
-        finish()
     }
     override fun showToast(coin:Int){
         Toast.makeText(
@@ -216,7 +209,6 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @OptIn(DelicateCoroutinesApi::class)
     override fun gotoPost() {
         val truck= Truck(
             name = "Select",
@@ -230,28 +222,11 @@ class ProfileActivity : ComponentActivity(),ProfileCallBack {
         intent.putExtra("ptime",ptime)
         intent.putExtra("pdate",pdate)
         startActivity(intent)
-        finish()
     }
 
-    override fun gotoSettings() {
-        TODO("Not yet implemented")
-    }
+
 
 
 }
 
-@Composable
-fun Greeting3(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview3() {
-    TruckerBuddyTheme {
-        Greeting3("Android")
-    }
-}

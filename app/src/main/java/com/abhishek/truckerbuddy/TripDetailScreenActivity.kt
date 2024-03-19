@@ -39,12 +39,10 @@ class TripDetailScreenActivity : ComponentActivity(),TripDetailScreenCallBack {
         tripId = (receivedIntent.getSerializableExtra("tripId") as? String)!!
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    //Greeting8("")
                     TripDetailScreen(tripId=tripId, tripDetailScreenCallBack = tripDetailScreenCallBack)
                 }
             }
@@ -92,17 +90,14 @@ class TripDetailScreenActivity : ComponentActivity(),TripDetailScreenCallBack {
         uid?.let { db.collection("Clients").document(it) }
             ?.update("My Bids", FieldValue.arrayUnion(bidId))
             ?.addOnSuccessListener {
-                // Handle success
                 println("Element added to the array field.")
             }
             ?.addOnFailureListener { e ->
-                // Handle failure
                 println("Error adding element to the array field: $e")
             }
         tripId.let { db.collection("Trips").document(it) }
             .update("Bids", FieldValue.arrayUnion(bidId))
             .addOnSuccessListener {
-                // Handle success
                 println("Element added to the array field.")
                 Toast.makeText(
                     baseContext,
@@ -112,25 +107,9 @@ class TripDetailScreenActivity : ComponentActivity(),TripDetailScreenCallBack {
                 finish()
             }
             .addOnFailureListener { e ->
-                // Handle failure
                 println("Error adding element to the array field: $e")
             }
 
     }
 }
 
-@Composable
-fun Greeting8(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview8() {
-    TruckerBuddyTheme {
-        Greeting8("Android")
-    }
-}

@@ -18,7 +18,6 @@ import com.abhishek.truckerbuddy.composables.RegScreen
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -29,7 +28,7 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
     var signUpCallBack=this
     public override fun onStart() {
         super.onStart()
-        // Check if user is signed in (non-null) and update UI accordingly.
+
         val currentUser = auth.currentUser
         if (currentUser != null) {
             reload()
@@ -40,7 +39,7 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
         super.onCreate(savedInstanceState)
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -63,7 +62,7 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
+
                         Log.d(TAG, "createUserWithEmail:success")
                         val user = auth.currentUser
                         updateUI(user)
@@ -91,7 +90,7 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
                         startActivity(navigate)
                         finish()
                     } else {
-                        // If sign in fails, display a message to the user.
+
                         Log.w(TAG, "createUserWithEmail:failure", task.exception)
                         Toast.makeText(
                             baseContext,
@@ -117,18 +116,3 @@ class SignUpActivity : ComponentActivity(),SignUpCallBack {
     }
 }
 
-@Composable
-fun Greeting2(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview2() {
-    TruckerBuddyTheme {
-        Greeting2("Android")
-    }
-}

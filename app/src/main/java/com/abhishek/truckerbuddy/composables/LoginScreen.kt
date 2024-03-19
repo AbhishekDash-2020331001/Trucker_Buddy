@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -51,21 +50,77 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.abhishek.truckerbuddy.LoginCallBack
 import com.abhishek.truckerbuddy.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(loginCallBack: LoginCallBack){
+    var isDialog by remember {
+        mutableStateOf(false)
+    }
+    var forgotMail by remember {
+        mutableStateOf("")
+    }
     var email by remember{ mutableStateOf("") }
     var password by remember{ mutableStateOf("") }
-    var isChecked by remember{ mutableStateOf(false) }
+    //var isChecked by remember{ mutableStateOf(false) }
     val (focusUsername,focusPassword) = remember { FocusRequester.createRefs()}
     val keyboardController =  LocalSoftwareKeyboardController.current
     var isPasswordVisible by remember{ mutableStateOf(false) }
+    if(isDialog){
+        Dialog(onDismissRequest = { isDialog=false }) {
+            Card(
+                modifier= Modifier
+                    .padding(8.dp)
+                    .wrapContentSize(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(10.dp)){
+                Column(
+                    modifier= Modifier
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Get link to change password",
+                        color = Color.Black,
+                        //modifier = Modifier.padding(start=100.dp),
+                        fontSize = 12.sp
+                    )
+                    OutlinedTextField(
+                        value = forgotMail,
+                        onValueChange = { forgotMail = it },
+                        modifier = Modifier
+                            .padding(top = 5.dp),
+                        leadingIcon = { Icon(imageVector = Icons.Default.Person, null) },
+                        label = { Text(text = "Email") },
+                        shape = RoundedCornerShape(10.dp),
 
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black, // Set the text color to black
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        visualTransformation = VisualTransformation.None
+                    )
+                    Button(onClick = {
+                        loginCallBack.sendLink(email = forgotMail)
+                    }) {
+                        Text(text = "Send Link")
+                    }
+                }
+            }
+        }
+
+    }
         Column(
-            modifier=Modifier
+            modifier= Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -82,7 +137,7 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                 fontSize = 22.sp
             )
             Card(
-                modifier=Modifier
+                modifier= Modifier
                     .padding(8.dp)
                     .wrapContentSize(),
                 colors = CardDefaults.cardColors(
@@ -145,7 +200,7 @@ fun LoginScreen(loginCallBack: LoginCallBack){
                     )
                     Row(modifier=Modifier.fillMaxWidth(),Arrangement.End) {
                         TextButton(onClick = {
-                            loginCallBack.gotoForgetPass()
+                            isDialog=true
                         }) {
                             Text(
                                 text = "Forgot Password?",
@@ -207,15 +262,3 @@ fun LoginScreen(loginCallBack: LoginCallBack){
 
 
 
-@Composable
-fun CustomRoundedCornerShape(
-    topLeft: Float,
-    topRight: Float,
-    bottomRight: Float,
-    bottomLeft: Float
-) = RoundedCornerShape(
-    topStart = topLeft.dp,
-    topEnd = topRight.dp,
-    bottomEnd = bottomRight.dp,
-    bottomStart = bottomLeft.dp
-)

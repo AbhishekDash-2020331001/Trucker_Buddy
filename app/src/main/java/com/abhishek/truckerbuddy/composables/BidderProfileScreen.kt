@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,12 +38,10 @@ import com.abhishek.truckerbuddy.BidderInfo
 import com.abhishek.truckerbuddy.BidderProfileScreenActivityCallBack
 import com.abhishek.truckerbuddy.R
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-/*data class BidderInfo(val name:String, val email:String, val phone:String, val rating:Double, val completedTrips:Int,val photo:String)*/
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun BidderProfileScreen(bidderInfo: BidderInfo, bidId: String, bidderId: String,bidderProfileScreenActivityCallBack: BidderProfileScreenActivityCallBack) {
     var dealDue by remember {
@@ -87,7 +84,6 @@ fun BidderProfileScreen(bidderInfo: BidderInfo, bidId: String, bidderId: String,
             fontSize = 20.sp
         )
 
-        // Card with basic information
         Card(
             modifier = Modifier
                 .padding(10.dp)
@@ -111,7 +107,7 @@ fun BidderProfileScreen(bidderInfo: BidderInfo, bidId: String, bidderId: String,
                         data = bidderInfo.photo,
                         builder = {
                             crossfade(true)
-                            placeholder(R.drawable.pp) // Replace with a placeholder image resource
+                            placeholder(R.drawable.pp)
                         }
                     )
 
@@ -126,7 +122,6 @@ fun BidderProfileScreen(bidderInfo: BidderInfo, bidId: String, bidderId: String,
 
                     RowWithText("Bidder", bidderInfo.name)
                     RowWithText("Rating", bidderInfo.rating.toString())
-                    // Show button based on conditions
                     when {
                         dealDue -> {
                             Button(
@@ -142,30 +137,27 @@ fun BidderProfileScreen(bidderInfo: BidderInfo, bidId: String, bidderId: String,
                             }
                         }
                         dealSent && !driverReplied -> {
-                            CancelDealRequestButton {
-                                dealDue=true
-                                dealSent=false
-                                if (currentUserUid != null) {
-                                    bidderProfileScreenActivityCallBack.cancelDeal(bidId = bidId, bidderId = bidderId, currentUserUid = currentUserUid)
-                                }
+                            Button(
+                                onClick = {
+                                    dealDue=true
+                                    dealSent=false
+                                    if (currentUserUid != null) {
+                                        bidderProfileScreenActivityCallBack.cancelDeal(bidId = bidId, bidderId = bidderId, currentUserUid = currentUserUid)
+                                    }
+                                }) {
+                                Text(text = "Cancel Deal")
                             }
-
                         }
                         driverReplied && !dealAccepted -> {
                             BlinkingText(text = "Deal Rejected", color = Color.Red, size = 12f)
                         }
                         driverReplied && dealAccepted -> {
-                            // Deal accepted by driver, show contact information card
-                            BlinkingText(text = "Deal Accepted", color= Color.Green, size=12f)
-                            //
-                        // howContactInformationCard(bidderInfo)
+                            BlinkingText(text = "Deal Accepted", color= Color(0xFF008B8B), size=12f)
                         }
                     }
                 }
             }
         }
-
-        // Card with contact information (shown only when 'accepted' is true)
         if (dealAccepted) {
             ShowContactInformationCard(bidderInfo)
         }
@@ -202,19 +194,7 @@ private fun ShowContactInformationCard(bidderInfo: BidderInfo) {
     }
 }
 
-@Composable
-private fun SendDealRequestButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
-        Text("Send Deal Request")
-    }
-}
 
-@Composable
-private fun CancelDealRequestButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
-        Text("Cancel Deal Request")
-    }
-}
 
 @Composable
 private fun RowWithText(label: String, value: String) {

@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.service.controls.ControlsProviderService
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -97,6 +98,22 @@ class MainActivity : ComponentActivity(),LoginCallBack {
         val intent= Intent(this@MainActivity,ForgetPassActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun sendLink(email: String) {
+        val auth=Firebase.auth
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        baseContext,
+                        "Password Reset Link Sent",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                    Log.d(ControlsProviderService.TAG, "Email sent.")
+                }
+            }
     }
 }
 

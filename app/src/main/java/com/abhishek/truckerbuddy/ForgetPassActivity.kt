@@ -57,18 +57,3 @@ class ForgetPassActivity : ComponentActivity(),ForgetPassActivityCallBack {
 
 }
 
-@Composable
-fun Greeting11(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview11() {
-    TruckerBuddyTheme {
-        Greeting11("Android")
-    }
-}

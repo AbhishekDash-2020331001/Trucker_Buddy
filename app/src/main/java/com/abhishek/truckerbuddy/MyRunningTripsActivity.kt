@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.abhishek.truckerbuddy.composables.CustomLoadingIndicator
 import com.abhishek.truckerbuddy.composables.MyRunningTrips
+import com.abhishek.truckerbuddy.composables.NoTripAvailablePage
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -33,11 +35,14 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
         super.onCreate(savedInstanceState)
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    var fetched by remember {
+                        mutableStateOf(false)
+                    }
                     val auth= Firebase.auth
                     val db= Firebase.firestore
                     var runningTripsList by remember { mutableStateOf(emptyList<String>()) }
@@ -52,14 +57,14 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
                                 if (documentSnapshot.exists()) {
                                     runningTripsList = documentSnapshot.get("Running Trips") as? List<String> ?: emptyList()
                                 } else {
-                                    // Document does not exist, handle accordingly
+
                                 }
                             }
                             .addOnFailureListener { exception ->
-                                // Handle failures in retrieving data
+
                             }
                     } else {
-                        // User is not signed in, handle accordingly (e.g., redirect to login)
+
                     }
                     var trips  by remember { mutableStateOf <List<TripBrief>>(emptyList())}
                     if (currentUser != null) {
@@ -76,23 +81,25 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
                                     val deliveryDivision=document.getString("Delivery Division")?:""
                                     val deliveryZilla=document.getString("Delivery Zilla")?:""
                                     val truckMap = document.get("Needed Truck") as? Map<String, Any>
+                                    val rated = document.getBoolean("Rated")?:false
                                     var name:String?= null
+                                    val creator= document.getString("Posts Creator")?:""
                                     var highestCapacity:Int?= null
                                     if (truckMap != null) {
-                                        // Retrieve values associated with keys
+
                                         name = truckMap["name"] as? String
                                         highestCapacity = truckMap["highestCapacity"] as? Int
 
                                         if (name != null && highestCapacity != null) {
-                                            // Use the retrieved values
+
                                             println("Name: $name")
                                             println("Highest Capacity: $highestCapacity")
                                         } else {
-                                            // Handle the case where values are null or not of the expected type
+
                                             println("Values are null or not of the expected type.")
                                         }
                                     } else {
-                                        // Handle the case where "Truck" is not a map or is null
+
                                         println("Truck field is not a map or is null.")
                                     }
                                     trips+= TripBrief(
@@ -105,15 +112,28 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
                                         truckCapacity = highestCapacity?:0,
                                         tripId = document.id,
                                         assigned = assigned,
-                                        ongoing = ongoing
+                                        ongoing = ongoing,
+                                        rated = rated,
+                                        creator = creator
                                     )
                                 }
+                                fetched=true
                             }
                             .addOnFailureListener { exception ->
                                 Log.w(TAG, "Error getting documents: ", exception)
                             }
                     }
-                    MyRunningTrips(myRunningTripsCallBack = myRunningTripsCallBack, trips = trips)
+                    if(!fetched){
+                        CustomLoadingIndicator()
+                    }
+                    else {
+                        if(trips.isEmpty()){
+                            NoTripAvailablePage()
+                        }
+                        else {
+                            MyRunningTrips(myRunningTripsCallBack = myRunningTripsCallBack, trips = trips)
+                        }
+                    }
                 }
             }
         }
@@ -128,18 +148,3 @@ class MyRunningTripsActivity : ComponentActivity(),MyRunningTripsCallBack {
     }
 }
 
-@Composable
-fun Greeting6(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview6() {
-    TruckerBuddyTheme {
-        Greeting6("Android")
-    }
-}

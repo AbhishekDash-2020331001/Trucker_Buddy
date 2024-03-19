@@ -46,7 +46,9 @@ import kotlinx.coroutines.tasks.await
 
 @Composable
 fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCallBack) {
-    // Replace with actual TripBrief data
+    var rated by remember {
+        mutableStateOf(false)
+    }
     var assigned by remember {
         mutableStateOf("")
     }
@@ -108,14 +110,14 @@ fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCal
                 deliveryZilla = document.getString("Delivery Zilla") ?: ""
                 goodsType = document.getString("Type of Good") ?: ""
                 flag = document.getBoolean("Running") == true
-
+                rated = document.getBoolean("Rated") == true
                 val truckMap = document.get("Needed Truck") as? Map<String, Any>
                 if (truckMap != null) {
-                    // Retrieve values associated with keys
+
                     truckType = truckMap["name"] as? String ?: ""
                     truckCapacity = truckMap["highestCapacity"] as? Int ?: 0
                 } else {
-                    // Handle the case where "Truck" is not a map or is null
+
                     println("Truck field is not a map or is null.")
                 }
             }
@@ -124,7 +126,7 @@ fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCal
         }
     }
 
-    // Call ShowTripDetail inside LaunchedEffect
+
     ShowTripDetail(
         trip = TripBrief(
             tripId = tripId,
@@ -136,7 +138,9 @@ fun TripDetailScreen(tripId:String,tripDetailScreenCallBack: TripDetailScreenCal
             truckType = truckType,
             deliveryLocation = "$deliveryDivision, $deliveryZilla",
             assigned = assigned,
-            ongoing = ongoing
+            ongoing = ongoing,
+            rated = rated,
+            creator = creatorId
         ),
         creator = creator,
         creatorId = creatorId,
@@ -183,7 +187,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                     .wrapContentSize()
                     .padding(16.dp)
             ) {
-                // First Box: Trip Information and Image
+
                 Column(
                     modifier = Modifier
                         .wrapContentSize()
@@ -198,9 +202,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                             containerColor = Color.White
                         ),
                         elevation = CardDefaults.cardElevation(10.dp)
-                        /*modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)*/
+
                     ) {
                         Column(
                             modifier = Modifier
@@ -208,7 +210,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            // Trip ID
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth(),
@@ -320,7 +322,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                         }
                     }
 
-                    // Second Box: Bid Section
+
                     Spacer(modifier=Modifier.height(16.dp))
                         Column(
                             modifier = Modifier
@@ -328,7 +330,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
                                 .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Currency Icon
+
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_currency),
                                 contentDescription = null,
@@ -338,7 +340,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Place Bid Text
+
                             Text(
                                 text = "Place Bid",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -347,7 +349,7 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Bid TextField
+
                             OutlinedTextField(
                                 value = str,
                                 onValueChange = { str = it },
@@ -366,11 +368,10 @@ fun ShowTripDetail(trip: TripBrief, creator: String, creatorId: String, flag: Bo
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Confirm Bid Button
+
                             Button(
                                 onClick = {
-                                    // Handle bid confirmation logic here
-                                    // For example, you can print the bid value
+
                                     println("Bid confirmed: $str")
                                     tripDetailScreenCallBack.placeBid(tripId = trip.tripId, tripCreatorId = creatorId, bidAmount = str)
 

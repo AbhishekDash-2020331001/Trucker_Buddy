@@ -10,5 +10,7 @@ data class TripBrief(
     val truckCapacity: Int,
     val goodsType: String,
     val assigned: String,
-    val ongoing: Boolean
+    val ongoing: Boolean,
+    val rated: Boolean,
+    val creator: String
 )

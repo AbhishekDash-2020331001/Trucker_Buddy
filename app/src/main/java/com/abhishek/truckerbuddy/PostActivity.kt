@@ -13,10 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.abhishek.truckerbuddy.composables.PostScreen
 import com.abhishek.truckerbuddy.composables.Truck
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
@@ -50,7 +47,7 @@ class PostActivity : ComponentActivity(),PostCallBack {
         pdate = (receivedIntent.getSerializableExtra("pdate") as? LocalDate)!!
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -78,9 +75,7 @@ class PostActivity : ComponentActivity(),PostCallBack {
         startActivity(intent)
     }
 
-    /*override fun gotoTruckScreen() {
 
-    }*/
 
     override fun createPost(
         pickUpDate: String,
@@ -112,9 +107,10 @@ class PostActivity : ComponentActivity(),PostCallBack {
                     if (documentSnapshot.exists()) {
                         val userName = documentSnapshot.getString("Name")
                         userName?.let { name ->
-                            // Use the retrieved name in the trip hashmap
+
 
                             val trip = hashMapOf(
+                                "Rated" to false,
                                 "Assigned" to "null",
                                 "Ongoing" to false,
                                 "Post Creator Name" to name,
@@ -139,7 +135,7 @@ class PostActivity : ComponentActivity(),PostCallBack {
                             uid.let { db.collection("Clients").document(it) }
                                 ?.update("Running Trips", FieldValue.arrayUnion(docId))
                                 ?.addOnSuccessListener {
-                                    // Handle success
+
                                     println("Element added to the array field.")
                                     Toast.makeText(
                                         baseContext,
@@ -151,7 +147,7 @@ class PostActivity : ComponentActivity(),PostCallBack {
                                     finish()
                                 }
                                 ?.addOnFailureListener { e ->
-                                    // Handle failure
+
                                     println("Error adding element to the array field: $e")
                                 }
                         }
@@ -174,29 +170,12 @@ class PostActivity : ComponentActivity(),PostCallBack {
 }
 
 fun generateDocumentId(uid: String): String {
-    // Get the current date and time
+
     val currentDateTime = Calendar.getInstance().time
     val dateFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
     val formattedDateTime = dateFormat.format(currentDateTime)
-
-    // Concatenate UID, date, and time to create the document ID
     return "$uid-$formattedDateTime"
 }
 
-@Composable
-fun Greeting4(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview4() {
-    TruckerBuddyTheme {
-        Greeting4("Android")
-    }
-}
 
 

@@ -27,7 +27,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
 import androidx.compose.material.icons.automirrored.filled.Announcement
+import androidx.compose.material.icons.automirrored.outlined.AirplaneTicket
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Email
@@ -43,6 +45,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,12 +57,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +84,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlin.math.ceil
 
 data class BottomNavigationItem(
     val title: String,
@@ -92,18 +98,25 @@ data class UserProfile(
     val username: String,
     val email: String,
     val phoneNumber: String,
-    val completedTrips: Int,
+    val completedTrips: Double,
     val runningTrips: Int,
     val userRating: Double,
     val emailVerified: Boolean,
     val deals: Int,
-    val coin: Int
+    val coin: Int,
+    val score: Double
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack) {
     val auth=Firebase.auth
+    var rating by remember {
+        mutableStateOf(userProfile.score/userProfile.completedTrips)
+    }
+    println(userProfile.score)
+    println(userProfile.completedTrips)
+    println(rating)
     var url by remember{
         mutableStateOf(userProfile.profilePictureUrl)
     }
@@ -120,19 +133,19 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
     val items = listOf(
         BottomNavigationItem(
             title = "Feed",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home
+            selectedIcon = Icons.AutoMirrored.Filled.AirplaneTicket,
+            unselectedIcon = Icons.AutoMirrored.Outlined.AirplaneTicket
         ),
         BottomNavigationItem(
             title = "Post",
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add
         ),
-        BottomNavigationItem(
+        /*BottomNavigationItem(
             title = "Settings",
             selectedIcon = Icons.Filled.Settings,
             unselectedIcon = Icons.Outlined.Settings
-        ),
+        ),*/
         BottomNavigationItem(
             title = "Profile",
             selectedIcon = Icons.Filled.Face,
@@ -199,7 +212,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                             // Image upload and Firestore update successful
                             url = downloadUrl
                         } else {
-                            // Handle the case when downloadUrl is empty (upload or Firestore update failed)
+
                         }
                         isLoading = false
                     }
@@ -217,40 +230,88 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(top = 8.dp)
-                        .clickable {
-                            profileCallBack.showToast(userProfile.coin)
-                        }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF00FFFF)) // Background color for the circle
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = "Coins",
-                            tint = Color.Yellow, // Color of the star icon
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.Center)
+                    // Coin at top left
+                    Column(
+                        modifier = Modifier.clickable {
+                            profileCallBack.showToast(userProfile.coin)
+                        },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Coin",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black // Changed color to black
+                            )
                         )
+                        // Coin icon and count row
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                                Icon(
+                                    painter= painterResource(id = R.drawable.ic_currency),
+                                    contentDescription = "Coins",
+                                    tint = Color(0xFF008B8B), // Gold color
+                                    modifier = Modifier
+                                        .size(19.dp)
+                                )
+
+                            Spacer(modifier = Modifier.width(4.dp))
+                            // Coin count
+                            Text(
+                                text = "${userProfile.coin}",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                color = Color(0xFFFFD700)
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${userProfile.coin}",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = 24.sp, // Adjust the font size as needed
-                            fontWeight = FontWeight.Bold, // Apply a bold font weight
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        color = Color(0xFFFFD700) // Color for the text
-                    )
+
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "User Rating",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black // Changed color to black
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row {
+                            for (index in 1..5) {
+                                if(index<= ceil(rating)){
+                                    filled()
+                                }
+                                else{
+                                    outlined()
+                                }
+
+                            }
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+
+
+
 
                 Spacer(modifier = Modifier.height(16.dp))
                 ProfilePicture(url, isLoading)
@@ -329,7 +390,7 @@ fun UserProfileScreen(userProfile: UserProfile,profileCallBack: ProfileCallBack)
                 UserDetailCard(
                     icon = Icons.Default.Star,
                     label = "User Rating",
-                    value = userProfile.userRating.toString(),
+                    value = rating.toString().take(4),
                     onClick={}
                 )
                 Button(
@@ -369,12 +430,11 @@ fun upload(selectedImageUri: Uri?, callback: (String) -> Unit) {
     val fileName = uid + "_profile_image.jpg"
     val imageRef: StorageReference = storageRef.child(fileName)
 
-    // Upload the image to Firebase Storage
     imageRef.putFile(selectedImageUri!!)
         .addOnSuccessListener { taskSnapshot ->
-            // Image uploaded successfully, now you can get the download URL
+
             imageRef.downloadUrl.addOnSuccessListener { uri ->
-                // The URI contains the download URL of the uploaded image
+
                 val downloadUrl = uri.toString()
                 val client = hashMapOf(
                     "Photo" to downloadUrl
@@ -388,17 +448,17 @@ fun upload(selectedImageUri: Uri?, callback: (String) -> Unit) {
                         }
                         .addOnFailureListener { e ->
                             Log.w(ContentValues.TAG, "Error writing document", e)
-                            callback("") // Return empty string in case of failure
+                            callback("")
                         }
                 } else {
-                    callback("") // Return empty string if UID is null
+                    callback("")
                 }
             }
         }
         .addOnFailureListener { exception ->
-            // Handle the failure of the image upload
+
             Log.e(ContentValues.TAG, "Error uploading image to Firebase Storage: ${exception.message}")
-            callback("") // Return empty string in case of failure
+            callback("")
         }
 }
 @Composable
@@ -421,12 +481,6 @@ fun EmailCard(
             containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(10.dp)
-        /*modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-            .clickable(onClick = onClick) */// Updated clickable modifier
     ) {
         Column(
             modifier = Modifier
@@ -478,12 +532,6 @@ fun UserDetailCard(
             containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(10.dp)
-        /*modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-            .clickable(onClick = onClick) */// Updated clickable modifier
     ) {
         Column(
             modifier = Modifier
@@ -512,10 +560,10 @@ fun ProfilePicture(profilePictureUrl: String?, isDataLoading: Boolean) {
             .size(150.dp)
             .clip(CircleShape)
     ) {
-        // Use Coil's rememberImagePainter to load the image from the URL
+
         val painter = rememberImagePainter(data = profilePictureUrl, builder = {
             crossfade(true)
-            placeholder(R.drawable.pp) // Replace with a placeholder image resource
+            placeholder(R.drawable.pp)
         })
 
         Image(
@@ -527,7 +575,7 @@ fun ProfilePicture(profilePictureUrl: String?, isDataLoading: Boolean) {
                 .clip(MaterialTheme.shapes.medium)
         )
 
-        // Circular loading indicator
+
         if (isDataLoading) {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -548,13 +596,15 @@ fun ProfileScreen(
     username: String,
     email: String,
     phoneNumber: String,
-    completedTrips: Int,
+    completedTrips: Double,
     runningTrips: Int,
     userRating: Double,
     emailVerified:Boolean,
     deals:Int,
     coin:Int,
-    profileCallBack: ProfileCallBack) {
+    profileCallBack: ProfileCallBack,
+    score: Double
+    ) {
     val userProfile = UserProfile(
         profilePictureUrl = profilePictureUrl,
         name = name,
@@ -566,9 +616,60 @@ fun ProfileScreen(
         userRating = userRating,
         emailVerified=emailVerified,
         deals=deals,
-        coin = coin
+        coin = coin,
+        score = score
     )
     UserProfileScreen(userProfile = userProfile,profileCallBack=profileCallBack)
+}
+
+@Composable
+fun filled(){
+    Box(
+        modifier = Modifier
+            .padding(start=2.dp)
+            .size(19.dp)
+            .clip(CircleShape)
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFF00FFFF), Color(0xFF008080))
+                )
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = "Coins",
+            tint = Color(0xFFFFD700), // Gold color
+            modifier = Modifier
+                .size(15.dp)
+                .align(Alignment.Center)
+        )
+    }
+
+}
+
+@Composable
+fun outlined(){
+    Box(
+        modifier = Modifier
+            .padding(start = 2.dp)
+            .size(19.dp)
+            .clip(CircleShape)
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFF00FFFF), Color(0xFF008080))
+                )
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Star,
+            contentDescription = "Coins",
+            tint = Color.White,
+            modifier = Modifier
+                .size(15.dp)
+                .align(Alignment.Center)
+        )
+    }
+
 }
 
 

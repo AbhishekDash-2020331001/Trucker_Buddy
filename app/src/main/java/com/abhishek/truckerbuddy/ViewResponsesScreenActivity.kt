@@ -19,6 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.abhishek.truckerbuddy.composables.Bid
+import com.abhishek.truckerbuddy.composables.CustomLoadingIndicator
+import com.abhishek.truckerbuddy.composables.NoTripAvailablePage
 import com.abhishek.truckerbuddy.composables.ViewResponsesScreen
 import com.abhishek.truckerbuddy.composables.getDocuments
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
@@ -33,7 +35,6 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
         tripId = (receivedIntent.getSerializableExtra("tripId") as? String)?:""
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -42,7 +43,9 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
                     var bids by remember {
                         mutableStateOf<List<Bid>>(emptyList())
                     }
-
+                    var fetched by remember {
+                        mutableStateOf(false)
+                    }
                     LaunchedEffect(tripId) {
                         val documents = getDocuments(tripId)
                         for (document in documents){
@@ -53,8 +56,20 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
                             val bidId = document.getString("Bid Id")?:""
                             bids+= Bid(bidAmount, bidderId, creatorId, trippId, bidId)
                         }
+                        fetched=true
                     }
-                    ViewResponsesScreen(bids = bids, viewResponsesScreenCallBack = viewResponsesScreenCallBack)
+                    if(!fetched){
+                        CustomLoadingIndicator()
+                    }
+                    else{
+                        if(bids.isEmpty()){
+                            NoTripAvailablePage()
+                        }
+                        else{
+                            ViewResponsesScreen(bids = bids, viewResponsesScreenCallBack = viewResponsesScreenCallBack)
+                        }
+                    }
+
                 }
             }
         }
@@ -69,18 +84,3 @@ class ViewResponsesScreenActivity : ComponentActivity(),ViewResponsesScreenCallB
     }
 }
 
-@Composable
-fun Greeting9(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview9() {
-    TruckerBuddyTheme {
-        Greeting9("Android")
-    }
-}

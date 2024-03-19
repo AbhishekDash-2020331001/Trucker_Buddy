@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhishek.truckerbuddy.composables.BidderProfileScreen
+import com.abhishek.truckerbuddy.composables.CustomLoadingIndicator
 import com.abhishek.truckerbuddy.ui.theme.TruckerBuddyTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -50,13 +51,15 @@ class BidderProfileScreenActivity : ComponentActivity(),BidderProfileScreenActiv
         db=Firebase.firestore
         setContent {
             TruckerBuddyTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     println("ashar pore bidderId $bidderId")
                     var accepted by remember{ mutableStateOf(false) }
+                    var fetched by remember {
+                        mutableStateOf(false)
+                    }
                     var name by remember { mutableStateOf("Loading") }
                     var email by remember { mutableStateOf("Loading") }
                     var phone by remember { mutableStateOf("Loading") }
@@ -70,45 +73,32 @@ class BidderProfileScreenActivity : ComponentActivity(),BidderProfileScreenActiv
                                 .get()
                                 .addOnSuccessListener { documentSnapshot ->
                                     if (documentSnapshot.exists()) {
-                                        // Document exists, extract and update data
                                         name = documentSnapshot.getString("Name")?:""
                                         email = documentSnapshot.getString("Email")?:""
                                         phone = documentSnapshot.getString("Phone")?:""
 
-                                        // Retrieve Completed Trips as a List<String>
+
                                         val completedTripsList = documentSnapshot.get("Completed Trips") as? List<String>
                                         completedTrips = completedTripsList?.size ?: 0
 
-                                        // Retrieve Running Trips as a List<String
+
                                         rating = documentSnapshot.getDouble("Rating") ?: 0.0
                                         profilePictureUrl = documentSnapshot.getString("Photo")?:""
                                     } else {
-                                        // Document does not exist, handle accordingly
-                                    }
 
+                                    }
+                                    fetched=true
                                 }
                                 .addOnFailureListener { exception ->
-                                    // Handle failures in retrieving data
+
                                 }
 
                     }
 
-                    if (name == "Loading") {
-                        // Display loading indicator or handle loading state
-                        // For example, you can show a loading spinner
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ){
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .padding(8.dp)
-                            )
-                        }
+                    if (!fetched) {
+                        CustomLoadingIndicator()
                     } else {
-                        // Data has been loaded, call ProfileScreen
+
                         val data= profilePictureUrl?.let { BidderInfo(name = name, completedTrips = completedTrips, email = email, phone = phone, photo = it, rating = rating) }
                         if (data != null) {
                             BidderProfileScreen(
@@ -134,29 +124,29 @@ class BidderProfileScreenActivity : ComponentActivity(),BidderProfileScreenActiv
                 )
             )
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
         db.collection("Clients")
             .document(currentUserUid)
             .update("Sent Deal Request", FieldValue.arrayUnion(bidId))
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
 
         db.collection("Clients")
             .document(bidderId)
             .update("Received Deal Request", FieldValue.arrayUnion(bidId))
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
         db
             .collection("Clients")
@@ -181,45 +171,30 @@ class BidderProfileScreenActivity : ComponentActivity(),BidderProfileScreenActiv
                 )
             )
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
         db.collection("Clients")
             .document(currentUserUid)
             .update("Sent Deal Request",FieldValue.arrayRemove(bidId))
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
 
         db.collection("Clients")
             .document(bidderId)
             .update("Received Deal Request",FieldValue.arrayRemove(bidId))
             .addOnSuccessListener {
-                // Handle success
+
             }
             .addOnFailureListener {
-                // Handle failure
+
             }
     }
 }
 
-@Composable
-fun Greeting10(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview10() {
-    TruckerBuddyTheme {
-        Greeting10("Android")
-    }
-}
